@@ -28,11 +28,16 @@ const app: Application = express();
 app.use(helmet());
 
 // 2. Enable Cross-Origin Resource Sharing (CORS)
-// Allows our frontend (Vite) to communicate with this backend
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? 'https://your-frontend-domain.com' : '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: [
+    'https://ethio-ai-s8gk.vercel.app', 
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // 3. Body parser, reading data from body into req.body
