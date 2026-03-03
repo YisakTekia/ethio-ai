@@ -63,30 +63,46 @@ export default function Login() {
   };
 
   // STEP 3: Login or Register based on user existence
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 🔴 ጊዜያዊ የ MOCK ሎጊን (አለቃህ IP እስኪያስተካክል ብቻ የሚሰራ) 🔴
-    if (phone === "0911111111" && password === "123456") {
-      // የውሸት የመግቢያ ካርድ (Token) እና የተጠቃሚ ዳታ ቋት ውስጥ እናስቀምጣለን
-      localStorage.setItem("token", "temporary_mock_token_for_testing");
-      localStorage.setItem("user", JSON.stringify({ 
-        id: "mock-12345", 
-        phone: "0911111111", 
-        isPaid: true, 
-        points: 50 
-      }));
-      
-      alert("በ ጊዜያዊ (Mock) አካውንት በተሳካ ሁኔታ ገብተዋል!");
-      
-      // ቀጥታ ወደ ዋናው ገጽ (Home/Dashboard) ይወስደናል
-      window.location.href = "/"; // (ወይም navigate('/') መጠቀም ትችላለህ)
-      return; // ፈንክሽኑን እዚህ ላይ ያቆመዋል፣ ወደተዘጋው ሰርቨር አይሄድም
-    }
-
-    // ... (ከዚህ በታች ያንተ ትክክለኛው የ አፒአይ (API) መገናኛ ኮድ ይቀጥላል) ...
+    setIsLoading(true);
+    setError('');
+    
+    const endpoint = isExistingUser ? '/login' : '/register';
+    
     try {
-        // const response = await axios.post(...)
+      const response = await fetch(`https://ethio-ai-backend.onrender.com/api/auth${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, password }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message || 'ሂደቱ አልተሳካም። እባክዎ እንደገና ይሞክሩ።');
+
+      // Save secure JWT token to local storage
+      localStorage.setItem('token', data.token);
+
+      // Save user to Zustand global state
+      const userData = {
+        id: data.data.id,
+        phone: data.data.phone,
+        status: 'ok' as const,
+        isPaid: data.data.isPaid,
+        points: data.data.points,
+      };
+      login(userData);
+      
+      // Navigate based on payment status
+      if (userData.isPaid) navigate('/'); 
+      else navigate('/subscribe'); 
+
+    } catch (err: any) {
+      setError(err.message || 'ከእይነመረብ (Network) ጋር መገናኘት አልተቻለም።');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col justify-center px-6 py-12 relative overflow-hidden">
