@@ -29,7 +29,7 @@ export default function Admin() {
         }
 
         // Make an authenticated request to the admin protected route
-        const response = await fetch('http://localhost:5000/api/admin/stats', {
+        const response = await fetch('https://ethio-ai-backend.onrender.com/api/admin/stats', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`

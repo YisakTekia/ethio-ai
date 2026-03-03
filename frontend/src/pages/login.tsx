@@ -26,7 +26,7 @@ export default function Login() {
     setError('');
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/check', {
+      const response = await fetch('https://ethio-ai-backend.onrender.com/api/auth/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone }),
@@ -71,7 +71,7 @@ export default function Login() {
     const endpoint = isExistingUser ? '/login' : '/register';
     
     try {
-      const response = await fetch(`http://localhost:5000/api/auth${endpoint}`, {
+      const response = await fetch(`https://ethio-ai-backend.onrender.com/api/auth${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, password }),
