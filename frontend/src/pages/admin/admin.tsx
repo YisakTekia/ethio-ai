@@ -1,7 +1,7 @@
 // src/pages/Admin.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, TrendingUp, Target, CreditCard, ArrowLeft, Loader2, AlertCircle, ShieldAlert } from 'lucide-react';
+import { Users, TrendingUp, Target, CreditCard, ArrowLeft, Loader2,  ShieldAlert } from 'lucide-react';
 
 // Define the structure of our expected statistics data
 interface AdminStats {
