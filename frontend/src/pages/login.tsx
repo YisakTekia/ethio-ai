@@ -63,28 +63,24 @@ export default function Login() {
   };
 
   // STEP 3: Login or Register based on user existence
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
+  // STEP 1: Check if the user exists
+ // STEP 1: Check if the user exists
+  const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 🔴 ጊዜያዊ የ MOCK ሎጊን (አለቃህ IP እስኪያስተካክል ብቻ የሚሰራ) 🔴
-    if (phone === "0911111111" && password === "123456") {
-      const mockToken = "temporary_mock_token_for_testing";
-      const mockUser = { id: "mock-12345", phone: "0911111111", isPaid: true, points: 50 };
-      
-      localStorage.setItem("token", mockToken);
-      localStorage.setItem("user", JSON.stringify(mockUser));
-      
-      // የ አፑን State (Zustand) ማሳወቅ
-      login(mockToken, mockUser);
-      
-      alert("በ ጊዜያዊ (Mock) አካውንት በተሳካ ሁኔታ ገብተዋል!");
-      navigate("/"); // ቀጥታ ወደ ዋናው ገጽ
+    // 🔴 ጊዜያዊ የ MOCK ሎጊን (ለ Step 1) 🔴
+    if (phone === "0911111111") {
+      setIsExistingUser(true); // የድሮ ተጠቃሚ ነው ብሎ ያስበዋል
+      setStep(3); // በቀጥታ ወደ ፓስወርድ ማስገቢያው ይወስደዋል
       return;
     }
 
-    // ትክክለኛው ሰርቨር ሲከፈት የሚሰራው ኮድ
     setIsLoading(true);
     setError('');
+    
+    
+    
+   
     
     try {
       const endpoint = isExistingUser ? '/api/auth/login' : '/api/auth/register';
