@@ -1,16 +1,16 @@
 // src/routes/chatRoutes.ts
 import { Router } from 'express';
 import { handleChatMessage } from '../controllers/chatController';
-import { protect } from '../middlewares/authMiddleware'; // <-- Import the protector
+// 🔴 ጊዜያዊ ማቋረጥ: የ protect ጠባቂውን አጥፍተነዋል (DB እንዳይጠይቅ)
 
 const router = Router();
 
 /**
  * @route   POST /api/chat
  * @desc    Receive user message, interact with Gemini AI, and return response
- * @access  Private (Requires valid JWT Token)
+ * @access  Public for now (Mock mode - No DB)
  */
-// Insert 'protect' before 'handleChatMessage'
-router.post('/', protect, handleChatMessage);
+// 🔴 protect ጠፋ፣ ቀጥታ ወደ controller ያልፋል
+router.post('/', handleChatMessage);
 
 export default router;
