@@ -1,81 +1,131 @@
 // src/pages/Profile.tsx
-import { useNavigate, Link } from 'react-router-dom';
-import { User, LogOut, CreditCard, ShieldCheck, ChevronRight, AlertCircle } from 'lucide-react';
+import { ArrowLeft, User, Phone, ShieldCheck, LogOut, Coins, Gift, ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
 export default function Profile() {
-  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  
+  // Retrieve user data and the logout function from the global state
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
+  /**
+   * Handles the logout process securely.
+   * Clears local storage (JWT token) and global state, then redirects to login.
+   */
   const handleLogout = () => {
-    logout(); // 1. ዙስታንድ (Zustand) ላይ ያለውን ሎጊን ያጠፋል
-    navigate('/login'); // 2. ወደ መግቢያ ገጽ ይመልሳል
+    // 1. Remove the secure JWT token from the browser's local storage
+    localStorage.removeItem('token');
+    
+    // 2. Clear the user data from the Zustand global state
+    logout();
+    
+    // 3. Redirect the user back to the login page
+    navigate('/login');
   };
 
   return (
-    <div className="flex flex-col gap-6 pb-8 animate-fade-in-up mt-4 px-2">
-      
-      {/* 1. Header & Avatar */}
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-tr from-blue-100 to-indigo-100 rounded-full shadow-inner mb-4 border-4 border-white">
-          <User className="w-10 h-10 text-blue-600" />
-        </div>
-        <h2 className="text-2xl font-extrabold text-gray-900">{user?.phone || 'ያልታወቀ ተጠቃሚ'}</h2>
-        <div className="flex items-center justify-center gap-1 text-sm font-medium mt-1 text-green-600">
-          <ShieldCheck className="w-4 h-4" /> 
-          <span>የተረጋገጠ አካውንት</span>
-        </div>
-      </div>
-
-      {/* 2. Subscription Status Card */}
-      <div className={`p-5 rounded-3xl shadow-sm border relative overflow-hidden ${
-        user?.isPaid 
-          ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white border-transparent shadow-green-200' 
-          : 'bg-white border-gray-100'
-      }`}>
-        <div className="flex items-center gap-4">
-          <div className={`p-3 rounded-2xl ${user?.isPaid ? 'bg-white/20' : 'bg-red-50'}`}>
-            <CreditCard className={`w-6 h-6 ${user?.isPaid ? 'text-white' : 'text-red-500'}`} />
-          </div>
-          <div className="flex-1">
-            <h3 className={`font-bold text-lg ${user?.isPaid ? 'text-white' : 'text-gray-900'}`}>
-              {user?.isPaid ? 'ፕሪሚየም ተጠቃሚ' : 'ነጻ ተጠቃሚ'}
-            </h3>
-            <p className={`text-sm mt-0.5 ${user?.isPaid ? 'text-green-100' : 'text-gray-500'}`}>
-              {user?.isPaid ? 'ያልተገደበ የ AI አገልግሎት አልዎት' : 'አገልግሎቱን ለማግኘት ክፍያ ይፈጽሙ'}
-            </p>
-          </div>
-        </div>
-        
-        {/* If not paid, show subscribe button */}
-        {!user?.isPaid && (
-          <Link to="/subscribe" className="mt-4 w-full flex items-center justify-center gap-2 bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition-colors">
-            <AlertCircle className="w-4 h-4 text-yellow-400" /> አሁኑኑ ይመዝገቡ
-          </Link>
-        )}
-      </div>
-
-      {/* 3. Settings / Options Menu */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 active:bg-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-              <User className="w-5 h-5 text-blue-600" />
-            </div>
-            <span className="font-bold text-gray-700">መረጃዬን አስተካክል</span>
-          </div>
-          <ChevronRight className="w-5 h-5 text-gray-400" />
+    <div className="min-h-screen bg-slate-50 p-6 pb-24 animate-fade-in-up">
+      {/* Top Navigation */}
+      <div className="flex items-center mb-8 pt-4">
+        <button onClick={() => navigate(-1)} className="p-2 bg-white rounded-full shadow-sm mr-4 active:scale-95 transition-transform">
+          <ArrowLeft className="w-6 h-6 text-gray-700" />
         </button>
+        <h1 className="text-2xl font-bold text-gray-900">የእርስዎ ፕሮፋይል</h1>
       </div>
 
-      {/* 4. Logout Button */}
-      <button 
-        onClick={handleLogout}
-        className="mt-4 flex items-center justify-center gap-2 text-red-500 bg-red-50 py-4 rounded-2xl font-bold hover:bg-red-100 active:scale-95 transition-all"
-      >
-        <LogOut className="w-5 h-5" /> ከሲስተሙ ውጣ (Logout)
-      </button>
+      <div className="space-y-6 max-w-md mx-auto">
+        
+        {/* Profile Info Card (Glassmorphism style) */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center relative overflow-hidden">
+          {/* Decorative background blur */}
+          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-blue-50 rounded-full blur-2xl"></div>
+          
+          <div className="w-20 h-20 bg-gradient-to-tr from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-md relative z-10">
+            <User className="w-10 h-10 text-blue-600" />
+          </div>
+          
+          <h2 className="text-xl font-extrabold text-gray-900 mb-1">
+            {user?.phone ? user.phone : 'ክቡር ተጠቃሚ'}
+          </h2>
+          <div className="flex items-center gap-1.5 text-sm font-medium px-3 py-1 bg-green-50 text-green-700 rounded-full border border-green-200">
+            <ShieldCheck className="w-4 h-4" />
+            <span>የተረጋገጠ አካውንት</span>
+          </div>
+        </div>
 
+        {/* Stats & Rewards Container */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Points / Balance Card */}
+          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-5 rounded-3xl border border-yellow-100 shadow-sm flex flex-col items-center text-center">
+            <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mb-2 text-yellow-600">
+              <Coins className="w-5 h-5" />
+            </div>
+            <p className="text-xs text-gray-500 font-semibold mb-1">ያሎት ነጥብ (ብር)</p>
+            <h3 className="text-2xl font-extrabold text-gray-900">{user?.points || 0}</h3>
+          </div>
+
+          {/* Subscription Status Card */}
+          <div className="bg-gradient-to-br from-purple-50 to-fuchsia-50 p-5 rounded-3xl border border-purple-100 shadow-sm flex flex-col items-center text-center">
+            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mb-2 text-purple-600">
+              <Gift className="w-5 h-5" />
+            </div>
+            <p className="text-xs text-gray-500 font-semibold mb-1">የክፍያ ሁኔታ</p>
+            <h3 className="text-sm font-extrabold text-gray-900 mt-1">
+              {user?.isPaid ? <span className="text-green-600">ያልተገደበ (VIP)</span> : <span className="text-orange-500">ነጻ (Free)</span>}
+            </h3>
+          </div>
+        </div>
+
+        {/* Action Menu List */}
+        <div className="bg-white rounded-3xl p-2 shadow-sm border border-gray-100">
+          <Link to="/subscribe" className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors active:scale-[0.98]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
+                <Phone className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-gray-800">የአገልግሎት ክፍያ</h4>
+                <p className="text-xs text-gray-500">ወርሃዊ ወይም ዕለታዊ ጥቅል ለመግዛት</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </Link>
+          
+          <div className="h-[1px] bg-gray-100 mx-4"></div>
+          
+          <button 
+            onClick={() => alert("የሞባይል ካርድ ሽልማትዎን ለማውጣት ቢያንስ 15 ብር (ነጥብ) መሙላት አለብዎት።")}
+            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-green-600">
+                <Gift className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-gray-800">ሽልማት አውጣ</h4>
+                <p className="text-xs text-gray-500">ነጥብዎን ወደ ሞባይል ካርድ ይቀይሩ</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </button>
+        </div>
+
+        {/* Secure Logout Button */}
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 font-bold py-4 rounded-2xl border border-red-100 hover:bg-red-100 active:scale-[0.98] transition-all mt-4"
+        >
+          <LogOut className="w-5 h-5" /> ከአካውንት ውጣ (Logout)
+        </button>
+
+        {/* App Version Info */}
+        <p className="text-center text-xs text-gray-400 mt-6 pb-4">
+          RootGate AI Version 1.0.0
+        </p>
+        
+      </div>
     </div>
   );
 }

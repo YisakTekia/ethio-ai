@@ -11,6 +11,7 @@ import Education from './pages/education';
 import Login from './pages/login';
 import Subscribe from './pages/subscribe';
 import Quiz from './pages/quiz';
+import Admin from './pages/admin/admin';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path="education" element={<Education />} />
             <Route path="profile" element={<Profile />} />
             <Route path="quiz" element={<Quiz />} />
+            <Route path="/admin" element={<Admin />} />
           </Route>
           
           {/* Standalone full-screen protected page */}

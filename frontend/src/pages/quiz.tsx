@@ -1,29 +1,78 @@
 // src/pages/Quiz.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, CheckCircle2, XCircle, ArrowLeft, Clock } from 'lucide-react';
-// import { useAuthStore } from '../store/authStore';
+import { Trophy, CheckCircle2, XCircle, ArrowLeft, Clock, Loader2, AlertCircle } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
 
 export default function Quiz() {
   const navigate = useNavigate();
-  // const addPoints = useAuthStore((state) => state.addPoints); // We will handle actual points in the backend
+  
+  // Get user data and the login function to update points globally
+  const user = useAuthStore((state) => state.user);
+  const login = useAuthStore((state) => state.login);
   
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // States to store backend responses
+  const [backendMessage, setBackendMessage] = useState('');
+  const [backendError, setBackendError] = useState('');
 
-  // Daily Question details
+  // Daily Question details (In a full app, this would also come from the backend)
   const dailyQuestion = {
     text: 'በኦሎምፒክ ታሪክ ለመጀመሪያ ጊዜ በባዶ እግሩ ሮጦ የማራቶን ወርቅ ያመጣው ኢትዮጵያዊ አትሌት ማን ነው?',
     options: ['ቀነኒሳ በቀለ', 'ሀይሌ ገብረስላሴ', 'አበበ ቢቂላ', 'ምሩፅ ይፍጠር'],
     correctAnswerIndex: 2, 
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectedAnswer === null) return;
-    setIsSubmitted(true);
     
-    // NOTE: In the real app, we will send this to the Backend to check 
-    // if the user is 1st, 2nd, or 3rd to answer. 
+    setIsLoading(true);
+    setBackendError('');
+    
+    const isAnswerCorrect = selectedAnswer === dailyQuestion.correctAnswerIndex;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found. Please login again.');
+
+      // Make the actual API call to submit the quiz
+      const response = await fetch('http://localhost:5000/api/quiz/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ isCorrect: isAnswerCorrect })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong while submitting.');
+      }
+
+      // Success! The backend accepted the attempt.
+      setIsSubmitted(true);
+      setBackendMessage(data.message);
+
+      // If the user won points, update their global state immediately so the Profile shows it
+      if (data.rewardPoints > 0 && user) {
+        login({
+          ...user,
+          points: (user.points || 0) + data.rewardPoints
+        });
+      }
+
+    } catch (err: any) {
+      console.error('Quiz submission error:', err);
+      // This catches the "already attempted today" error from the backend
+      setBackendError(err.message || 'ከሰርቨር ጋር መገናኘት አልተቻለም።');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -59,6 +108,14 @@ export default function Quiz() {
           </ul>
         </div>
 
+        {/* Backend Error Message (e.g. "Already attempted today") */}
+        {backendError && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl flex items-start gap-2 text-sm font-medium animate-fade-in-up">
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <p>{backendError}</p>
+          </div>
+        )}
+
         <h2 className="text-xl font-bold text-gray-800 mb-6 leading-relaxed">
           {dailyQuestion.text}
         </h2>
@@ -73,14 +130,14 @@ export default function Quiz() {
             return (
               <button
                 key={index}
-                disabled={isSubmitted}
+                disabled={isSubmitted || isLoading || !!backendError}
                 onClick={() => setSelectedAnswer(index)}
                 className={`w-full text-left p-4 rounded-2xl border-2 transition-all flex justify-between items-center ${
                   isCorrect ? 'border-green-500 bg-green-50' : 
                   isWrong ? 'border-red-500 bg-red-50' : 
                   isSelected ? 'border-purple-500 bg-purple-50' : 
                   'border-gray-100 bg-white hover:border-purple-200'
-                } ${isSubmitted ? 'cursor-default' : 'cursor-pointer active:scale-[0.98]'}`}
+                } ${isSubmitted || !!backendError ? 'cursor-default' : 'cursor-pointer active:scale-[0.98]'}`}
               >
                 <span className={`font-semibold ${isCorrect ? 'text-green-700' : isWrong ? 'text-red-700' : isSelected ? 'text-purple-700' : 'text-gray-700'}`}>
                   {option}
@@ -93,19 +150,19 @@ export default function Quiz() {
         </div>
 
         {/* Submit Button */}
-        {!isSubmitted ? (
+        {!isSubmitted && !backendError ? (
           <button
             onClick={handleSubmit}
-            disabled={selectedAnswer === null}
-            className={`w-full py-4 rounded-2xl font-bold transition-all shadow-md ${
-              selectedAnswer !== null
+            disabled={selectedAnswer === null || isLoading}
+            className={`w-full py-4 rounded-2xl font-bold transition-all shadow-md flex items-center justify-center gap-2 ${
+              selectedAnswer !== null && !isLoading
                 ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-purple-200 hover:scale-[1.02] active:scale-[0.98]'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >
-            መልሴን አረጋግጥ
+            {isLoading ? <><Loader2 className="w-5 h-5 animate-spin" /> እባክዎ ይጠብቁ...</> : 'መልሴን አረጋግጥ'}
           </button>
-        ) : (
+        ) : isSubmitted ? (
           <div className={`p-4 rounded-2xl text-center border animate-fade-in-up ${
             selectedAnswer === dailyQuestion.correctAnswerIndex 
               ? 'bg-green-50 border-green-200' 
@@ -114,16 +171,17 @@ export default function Quiz() {
             <h3 className={`font-bold text-lg mb-1 ${selectedAnswer === dailyQuestion.correctAnswerIndex ? 'text-green-700' : 'text-red-700'}`}>
               {selectedAnswer === dailyQuestion.correctAnswerIndex ? '🎉 ትክክል ነው!' : '😔 አልተሳካም'}
             </h3>
-            <p className={`text-sm mt-2 font-medium ${selectedAnswer === dailyQuestion.correctAnswerIndex ? 'text-green-700' : 'text-red-600'}`}>
-              {selectedAnswer === dailyQuestion.correctAnswerIndex 
-                ? 'መልሱን ትክክል መልሰዋል! ሽልማት ውስጥ መግባትዎን ለማረጋገጥ ውጤትዎን ለባክኤንድ (Server) ልከነዋል። አሸናፊ ከሆኑ በስልክ ቁጥርዎ ይላክልዎታል!' 
-                : 'የዛሬውን ጥያቄ ስተዋል። ነገ መልሰው ይሞክሩ!'}
+            {/* Display the exact dynamic message returned from the backend */}
+            <p className={`text-sm mt-2 font-medium leading-relaxed ${selectedAnswer === dailyQuestion.correctAnswerIndex ? 'text-green-700' : 'text-red-600'}`}>
+              {backendMessage || (selectedAnswer === dailyQuestion.correctAnswerIndex 
+                ? 'መልሱን ትክክል መልሰዋል! ሽልማት ውስጥ መግባትዎን ለማረጋገጥ ውጤትዎን ለባክኤንድ ልከነዋል።' 
+                : 'የዛሬውን ጥያቄ ስተዋል። ነገ መልሰው ይሞክሩ!')}
             </p>
             <button onClick={() => navigate('/')} className="mt-4 text-sm font-bold text-gray-600 underline hover:text-gray-900">
               ወደ ዋናው ገጽ ተመለስ
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

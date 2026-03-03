@@ -1,5 +1,7 @@
+// src/pages/Education.tsx
 import { useState, useRef, useEffect } from 'react';
 import { Send, BookOpen, User, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // Define message structure
 type Message = {
@@ -19,9 +21,10 @@ export default function Education() {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  // Ref for auto-scrolling to the latest message
+  const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
+  // Auto-scroll to the latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -37,12 +40,19 @@ export default function Education() {
     setIsLoading(true);
 
     try {
-      // 2. REAL BACKEND CALL
+      // Retrieve the secure JWT token from local storage
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('No authentication token found. Please login again.');
+      }
+
+      // 2. REAL BACKEND CALL WITH AUTHORIZATION HEADER
       const response = await fetch('http://localhost:5000/api/chat', { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${userToken}` // Add token when auth is ready
+          'Authorization': `Bearer ${token}` // <--- CRITICAL: Sends token to pass backend security
         },
         body: JSON.stringify({
           message: newUserMsg.text,
@@ -50,11 +60,17 @@ export default function Education() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        // If token is expired or invalid, redirect to login
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/login');
+          return;
+        }
+        throw new Error(data.message || 'Network response was not ok');
+      }
       
       const newBotMsg: Message = { 
         id: Date.now().toString(), 
@@ -63,11 +79,13 @@ export default function Education() {
       };
       setMessages((prev) => [...prev, newBotMsg]);
 
-    } catch (error) {
+    } catch (error: any) {
        console.error("Error communicating with AI:", error);
        const errorMsg: Message = {
            id: Date.now().toString(),
-           text: "ይቅርታ፣ ከሰርቨሩ ጋር መገናኘት አልተቻለም። እባክዎ ትንሽ ቆይተው እንደገና ይሞክሩ።",
+           text: error.message === 'No authentication token found. Please login again.' 
+            ? "የደህንነት ቁልፍ (Token) አልተገኘም፣ እባክዎ ከአካውንትዎ ወጥተው እንደገና ይግቡ።"
+            : "ይቅርታ፣ ከሰርቨሩ ጋር መገናኘት አልተቻለም። እባክዎ ትንሽ ቆይተው እንደገና ይሞክሩ።",
            isBot: true
        };
        setMessages((prev) => [...prev, errorMsg]);
