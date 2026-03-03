@@ -155,7 +155,7 @@ export default function Login() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="block w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all disabled:opacity-50"
-                    placeholder="0911223344"
+                    placeholder="09--------"
                   />
                 </div>
               </div>
