@@ -63,30 +63,48 @@ export default function Login() {
   };
 
   // STEP 3: Login or Register based on user existence
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // 🔴 ጊዜያዊ የ MOCK ሎጊን (አለቃህ IP እስኪያስተካክል ብቻ የሚሰራ) 🔴
     if (phone === "0911111111" && password === "123456") {
-      // የውሸት የመግቢያ ካርድ (Token) እና የተጠቃሚ ዳታ ቋት ውስጥ እናስቀምጣለን
-      localStorage.setItem("token", "temporary_mock_token_for_testing");
-      localStorage.setItem("user", JSON.stringify({ 
-        id: "mock-12345", 
-        phone: "0911111111", 
-        isPaid: true, 
-        points: 50 
-      }));
+      const mockToken = "temporary_mock_token_for_testing";
+      const mockUser = { id: "mock-12345", phone: "0911111111", isPaid: true, points: 50 };
+      
+      localStorage.setItem("token", mockToken);
+      localStorage.setItem("user", JSON.stringify(mockUser));
+      
+      // የ አፑን State (Zustand) ማሳወቅ
+      login(mockToken, mockUser);
       
       alert("በ ጊዜያዊ (Mock) አካውንት በተሳካ ሁኔታ ገብተዋል!");
-      
-      // ቀጥታ ወደ ዋናው ገጽ (Home/Dashboard) ይወስደናል
-      window.location.href = "/"; // (ወይም navigate('/') መጠቀም ትችላለህ)
-      return; // ፈንክሽኑን እዚህ ላይ ያቆመዋል፣ ወደተዘጋው ሰርቨር አይሄድም
+      navigate("/"); // ቀጥታ ወደ ዋናው ገጽ
+      return;
     }
 
-    // ... (ከዚህ በታች ያንተ ትክክለኛው የ አፒአይ (API) መገናኛ ኮድ ይቀጥላል) ...
+    // ትክክለኛው ሰርቨር ሲከፈት የሚሰራው ኮድ
+    setIsLoading(true);
+    setError('');
+    
     try {
-        // const response = await axios.post(...)
+      const endpoint = isExistingUser ? '/api/auth/login' : '/api/auth/register';
+      const response = await fetch(`https://ethio-ai-backend.onrender.com${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, password }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message || 'መግባት አልተቻለም፣ እባክዎ እንደገና ይሞክሩ።');
+
+      login(data.token, data.data);
+      navigate("/");
+    } catch (err: any) {
+      setError(err.message || 'ከእይነመረብ ጋር መገናኘት አልተቻለም።');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col justify-center px-6 py-12 relative overflow-hidden">
@@ -179,7 +197,7 @@ export default function Login() {
                     required
                     maxLength={4}
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} // Only allow numbers
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                     className="block w-full pl-11 pr-4 py-3.5 tracking-widest text-lg font-bold bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-center"
                     placeholder="1234"
                   />
