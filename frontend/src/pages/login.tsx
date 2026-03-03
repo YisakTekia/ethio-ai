@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
 export default function Login() {
-  // 1 = Phone Input, 2 = OTP Verification (New Users Only), 3 = Password Input
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isExistingUser, setIsExistingUser] = useState(false);
   
@@ -19,38 +18,14 @@ export default function Login() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
 
-  // STEP 1: Check if the user exists
+  // STEP 1: ሙሉ ጊዜያዊ (MOCK) - ምንም ሰርቨር አይጠይቅም
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      const response = await fetch('https://ethio-ai-backend.onrender.com/api/auth/check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
-      });
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.message || 'ስልክ ቁጥር ማጣራት አልተቻለም');
-
-      setIsExistingUser(data.exists);
-      
-      // If user exists, go to Password step. If new, go to OTP step.
-      if (data.exists) {
-        setStep(3);
-      } else {
-        setStep(2);
-      }
-    } catch (err: any) {
-      setError(err.message || 'ከእይነመረብ (Network) ጋር መገናኘት አልተቻለም።');
-    } finally {
-      setIsLoading(false);
-    }
+    setIsExistingUser(true); // የድሮ ተጠቃሚ ነው ብሎ ያስበዋል
+    setStep(3); // በቀጥታ ወደ ፓስወርድ ማስገቢያው ይወስደዋል
   };
 
-  // STEP 2: Verify OTP (Simulated for Frontend)
+  // STEP 2: Verify OTP
   const handleOtpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length < 4) {
@@ -58,48 +33,24 @@ export default function Login() {
       return;
     }
     setError('');
-    // Proceed to create password after OTP is verified
     setStep(3); 
   };
 
-  // STEP 3: Login or Register based on user existence
-  // STEP 1: Check if the user exists
- // STEP 1: Check if the user exists
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
+  // STEP 3: ሙሉ ጊዜያዊ (MOCK) - ምንም ሰርቨር አይጠይቅም
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 🔴 ጊዜያዊ የ MOCK ሎጊን (ለ Step 1) 🔴
-    if (phone === "0911111111") {
-      setIsExistingUser(true); // የድሮ ተጠቃሚ ነው ብሎ ያስበዋል
-      setStep(3); // በቀጥታ ወደ ፓስወርድ ማስገቢያው ይወስደዋል
-      return;
-    }
-
-    setIsLoading(true);
-    setError('');
+    // ምንም አይነት ፓስወርድ ቢገባ፣ ሰርቨርን ሳይጠይቅ ቀጥታ ወደ ውስጥ ያስገባል
+    const mockToken = "temporary_mock_token_for_testing";
+    const mockUser = { id: "mock-12345", phone: phone, isPaid: true, points: 50 };
     
+    localStorage.setItem("token", mockToken);
+    localStorage.setItem("user", JSON.stringify(mockUser));
     
+    login(mockToken, mockUser);
     
-   
-    
-    try {
-      const endpoint = isExistingUser ? '/api/auth/login' : '/api/auth/register';
-      const response = await fetch(`https://ethio-ai-backend.onrender.com${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password }),
-      });
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.message || 'መግባት አልተቻለም፣ እባክዎ እንደገና ይሞክሩ።');
-
-      login(data.token, data.data);
-      navigate("/");
-    } catch (err: any) {
-      setError(err.message || 'ከእይነመረብ ጋር መገናኘት አልተቻለም።');
-    } finally {
-      setIsLoading(false);
-    }
+    alert("በ ጊዜያዊ (Mock) አካውንት በተሳካ ሁኔታ ገብተዋል!");
+    navigate("/"); // ቀጥታ ወደ ዋናው ገጽ
   };
 
   return (
@@ -167,7 +118,7 @@ export default function Login() {
             </form>
           )}
 
-          {/* STEP 2: OTP VERIFICATION (Only for New Users) */}
+          {/* STEP 2: OTP VERIFICATION */}
           {step === 2 && (
             <form onSubmit={handleOtpSubmit} className="space-y-6 animate-fade-in-up">
               <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center mb-6">
@@ -212,7 +163,7 @@ export default function Login() {
             </form>
           )}
 
-          {/* STEP 3: PASSWORD INPUT (Login or Create Password) */}
+          {/* STEP 3: PASSWORD INPUT */}
           {step === 3 && (
             <form onSubmit={handlePasswordSubmit} className="space-y-6 animate-fade-in-up">
               <div>
