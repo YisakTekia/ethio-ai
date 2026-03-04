@@ -122,7 +122,7 @@ export default function Profile() {
 
         {/* App Version Info */}
         <p className="text-center text-xs text-gray-400 mt-6 pb-4">
-          RootGate AI Version 1.0.0
+          Ethio AI AI Version 1.0.0
         </p>
         
       </div>

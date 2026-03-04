@@ -65,12 +65,12 @@ if (process.env.NODE_ENV === 'development') {
 // ==========================================
 // DATABASE CONNECTION
 // ==========================================
-
-// 🔴 ጊዜያዊ ማቋረጥ፡ አለቃህ የ ዳታቤዝ IP እስኪያስተካክል ድረስ ዳታቤዙን አናነቃውም 🔴
-// connectDB(); 
-
+connectDB();
 // Mount the chat routes under the /api/chat endpoint
 app.use('/api/chat', chatRoutes);
+// ==========================================
+// API ROUTES (Placeholders for future routes)
+// ==========================================
 // Mount authentication routes
 app.use('/api/auth', authRoutes);
 // Health check endpoint for server monitoring

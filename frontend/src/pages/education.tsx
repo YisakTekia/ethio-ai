@@ -14,7 +14,7 @@ export default function Education() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'ሰላም! እኔ የ RootGate የትምህርት AI አማካሪ ነኝ። ስለ ትምህርት ቤት፣ ፈተናዎች ወይም የጥናት ስልቶች ምን ልርዳዎት?',
+      text: 'ሰላም! እኔ የ Ethio AI የትምህርት AI አማካሪ ነኝ። ስለ ትምህርት ቤት፣ ፈተናዎች ወይም የጥናት ስልቶች ምን ልርዳዎት?',
       isBot: true,
     }
   ]);

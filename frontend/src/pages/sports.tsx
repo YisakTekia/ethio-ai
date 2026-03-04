@@ -14,7 +14,7 @@ export default function Sports() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'ሰላም! እኔ የ RootGate የስፖርት እና መዝናኛ AI ነኝ። ስለ እግር ኳስ፣ አትሌቲክስ፣ ፊልሞች ወይም ሙዚቃ ምን ልንገርዎት?',
+      text: 'ሰላም! እኔ የ Ethio AI የስፖርት እና መዝናኛ AI ነኝ። ስለ እግር ኳስ፣ አትሌቲክስ፣ ፊልሞች ወይም ሙዚቃ ምን ልንገርዎት?',
       isBot: true,
     }
   ]);

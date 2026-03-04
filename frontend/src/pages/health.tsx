@@ -14,7 +14,7 @@ export default function Health() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'ሰላም! እኔ የ RootGate የጤና AI አማካሪ ነኝ። ስለ አጠቃላይ ጤንነት፣ አመጋገብ ወይም የመጀመሪያ ደረጃ ህክምና መረጃ ምን ልርዳዎት?',
+      text: 'ሰላም! እኔ የ Ethio AI የጤና AI አማካሪ ነኝ። ስለ አጠቃላይ ጤንነት፣ አመጋገብ ወይም የመጀመሪያ ደረጃ ህክምና መረጃ ምን ልርዳዎት?',
       isBot: true,
     }
   ]);
