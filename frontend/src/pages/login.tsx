@@ -49,7 +49,7 @@ export default function Login() {
     
     login(mockToken, mockUser);
     
-    alert("በ ጊዜያዊ (Mock) አካውንት በተሳካ ሁኔታ ገብተዋል!");
+   
     navigate("/"); // ቀጥታ ወደ ዋናው ገጽ
   };
 
