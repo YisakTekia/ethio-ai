@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Trophy, User, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
+import { useAuthStore } from '../store/authStore'; // 🔴 ይቺን ጨምር
 // Define message structure
 type Message = {
   id: string;
@@ -41,7 +41,7 @@ export default function Sports() {
 
     try {
       // Retrieve the secure JWT token from local storage
-      const token = localStorage.getItem('token');
+      const token = useAuthStore.getState().token;
       
       if (!token) {
         throw new Error('No authentication token found. Please login again.');

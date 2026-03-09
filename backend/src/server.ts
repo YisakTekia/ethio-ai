@@ -18,7 +18,7 @@ dotenv.config();
 // Initialize Express application
 const app: Application = express();
 
-
+app.set('trust proxy', 1);
 
 // ==========================================
 // ENTERPRISE SECURITY & MIDDLEWARE SETUP
