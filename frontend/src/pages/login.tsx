@@ -1,4 +1,4 @@
-// src/pages/Login.tsx
+// src/pages/login.tsx
 import { useState } from 'react';
 import { Phone, Lock, ArrowRight, Loader2, AlertCircle, MessageSquareText, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -7,25 +7,41 @@ import { useAuthStore } from '../store/authStore';
 export default function Login() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isExistingUser, setIsExistingUser] = useState(false);
-  
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
-  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
 
-  // STEP 1: ሙሉ ጊዜያዊ (MOCK) - ምንም ሰርቨር አይጠይቅም
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsExistingUser(true); // የድሮ ተጠቃሚ ነው ብሎ ያስበዋል
-    setStep(3); // በቀጥታ ወደ ፓስወርድ ማስገቢያው ይወስደዋል
+    setIsLoading(true);
+    setError('');
+    try {
+      const response = await fetch('https://ethio-ai-backend.onrender.com/api/auth/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'ስልክ ቁጥር ማጣራት አልተቻለም');
+
+      setIsExistingUser(data.exists);
+      if (data.exists) {
+        setStep(3);
+      } else {
+        setStep(2);
+      }
+    } catch (err: any) {
+      setError(err.message || 'ከእይነመረብ (Network) ጋር መገናኘት አልተቻለም።');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // STEP 2: Verify OTP
   const handleOtpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length < 4) {
@@ -36,31 +52,36 @@ export default function Login() {
     setStep(3); 
   };
 
-  // STEP 3: ሙሉ ጊዜያዊ (MOCK) - ምንም ሰርቨር አይጠይቅም
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    try {
+      const endpoint = isExistingUser ? '/api/auth/login' : '/api/auth/register';
+      const response = await fetch(`https://ethio-ai-backend.onrender.com${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, password }),
+      });
+      const data = await response.json();
 
-    // ምንም አይነት ፓስወርድ ቢገባ፣ ሰርቨርን ሳይጠይቅ ቀጥታ ወደ ውስጥ ያስገባል
-    const mockToken = "temporary_mock_token_for_testing";
-    const mockUser = { id: "mock-12345", phone: phone, isPaid: true, points: 50 };
-    
-    localStorage.setItem("token", mockToken);
-    localStorage.setItem("user", JSON.stringify(mockUser));
-    
-    login(mockToken, mockUser);
-    
-   
-    navigate("/"); // ቀጥታ ወደ ዋናው ገጽ
+      if (!response.ok) throw new Error(data.message || 'መግባት አልተቻለም፣ እባክዎ እንደገና ይሞክሩ።');
+
+      login(data.token, data.data);
+      navigate("/");
+    } catch (err: any) {
+      setError(err.message || 'ከእይነመረብ ጋር መገናኘት አልተቻለም።');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col justify-center px-6 py-12 relative overflow-hidden">
-      {/* Decorative background blur shapes */}
       <div className="absolute top-[-10%] left-[-10%] w-64 h-64 bg-blue-400/30 rounded-full blur-3xl"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-64 h-64 bg-purple-400/30 rounded-full blur-3xl"></div>
 
       <div className="relative z-10 w-full max-w-md mx-auto animate-fade-in-up">
-        {/* Header Section */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl shadow-xl shadow-blue-200/50 mb-6">
             <span className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-tr from-blue-600 to-indigo-600">
@@ -68,7 +89,7 @@ export default function Login() {
             </span>
           </div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-            እንኳን ወደ <span className="text-blue-600">Ethio AI</span> በደህና መጡ
+            እንኳን ወደ <span className="text-blue-600">RootGate</span> በደህና መጡ
           </h1>
           <p className="text-gray-500 mt-2 font-medium">
             {step === 1 && 'ለመጀመር ስልክ ቁጥርዎን ያስገቡ'}
@@ -77,7 +98,6 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Error Message Display */}
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl flex items-center gap-2 text-sm font-medium animate-fade-in-up">
             <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -85,10 +105,8 @@ export default function Login() {
           </div>
         )}
 
-        {/* Form Container with Glassmorphism */}
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-white/50">
           
-          {/* STEP 1: PHONE INPUT */}
           {step === 1 && (
             <form onSubmit={handlePhoneSubmit} className="space-y-6 animate-fade-in-up">
               <div>
@@ -118,7 +136,6 @@ export default function Login() {
             </form>
           )}
 
-          {/* STEP 2: OTP VERIFICATION */}
           {step === 2 && (
             <form onSubmit={handleOtpSubmit} className="space-y-6 animate-fade-in-up">
               <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center mb-6">
@@ -163,7 +180,6 @@ export default function Login() {
             </form>
           )}
 
-          {/* STEP 3: PASSWORD INPUT */}
           {step === 3 && (
             <form onSubmit={handlePasswordSubmit} className="space-y-6 animate-fade-in-up">
               <div>
