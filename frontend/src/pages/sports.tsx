@@ -49,7 +49,7 @@ export default function Sports() {
       }
 
       // 2. ወደ ሰርቨር እንልካለን
-      const response = await fetch('https://ethio-ai-backend.onrender.com/api/chat', { 
+      const response = await fetch('http://localhost:5000/api/chat', { 
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
