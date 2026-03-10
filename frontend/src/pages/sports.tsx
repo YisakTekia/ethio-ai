@@ -40,19 +40,20 @@ export default function Sports() {
     setIsLoading(true);
 
     try {
-      // Retrieve the secure JWT token from local storage
       const token = useAuthStore.getState().token;
       
-      if (!token) {
+      // 🔴 1. ካርዱ ባዶ ወይም የተበላሸ መሆኑን በደንብ እናጣራለን
+      if (!token || token === 'undefined' || token === 'null' || typeof token === 'object') {
+        localStorage.clear(); // ማስታወሻውን ሙሉ በሙሉ ያጠፋዋል
         throw new Error('No authentication token found. Please login again.');
       }
 
-      // 2. REAL BACKEND CALL WITH AUTHORIZATION HEADER
+      // 2. ወደ ሰርቨር እንልካለን
       const response = await fetch('https://ethio-ai-backend.onrender.com/api/chat', { 
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // <--- CRITICAL: Sends the token to pass the backend security middleware
+          'Authorization': `Bearer ${token}` 
         },
         body: JSON.stringify({
           message: newUserMsg.text,
@@ -63,14 +64,17 @@ export default function Sports() {
       const data = await response.json();
 
       if (!response.ok) {
-        // If token is expired or invalid, redirect to login
         if (response.status === 401) {
-          localStorage.removeItem('token');
+          
+          localStorage.clear();
+          sessionStorage.clear();
           navigate('/login');
           return;
         }
         throw new Error(data.message || 'Network response was not ok');
       }
+      
+     
       
       const newBotMsg: Message = { 
         id: Date.now().toString(), 
