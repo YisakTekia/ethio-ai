@@ -1,20 +1,22 @@
 // src/pages/Health.tsx
 import { useState, useRef, useEffect } from 'react';
-import { Send, HeartPulse, User, Loader2 } from 'lucide-react';
+import { Send, HeartPulse, User, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
 
-// Define message structure
+// Define the structure for chat messages
 type Message = {
   id: string;
   text: string;
   isBot: boolean;
+  isError?: boolean;
 };
 
 export default function Health() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'ሰላም! እኔ የ Ethio AI የጤና AI አማካሪ ነኝ። ስለ አጠቃላይ ጤንነት፣ አመጋገብ ወይም የመጀመሪያ ደረጃ ህክምና መረጃ ምን ልርዳዎት?',
+      text: 'ሰላም! እኔ የ Star Think የጤና AI አማካሪ ነኝ። ስለ አጠቃላይ ጤንነት፣ አመጋገብ ወይም የመጀመሪያ ደረጃ ህክምና መረጃ ምን ልርዳዎት?',
       isBot: true,
     }
   ]);
@@ -24,7 +26,7 @@ export default function Health() {
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Auto-scroll to the latest message
+  // Auto-scroll to the bottom when a new message arrives
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -33,119 +35,130 @@ export default function Health() {
     e.preventDefault();
     if (!inputText.trim()) return;
 
-    // 1. Add user message to the UI
+    // Add the user's message to the chat interface
     const newUserMsg: Message = { id: Date.now().toString(), text: inputText, isBot: false };
     setMessages((prev) => [...prev, newUserMsg]);
     setInputText('');
     setIsLoading(true);
 
     try {
-      // Retrieve the secure JWT token from local storage
-      const token = localStorage.getItem('token');
+      // Retrieve the authentication token from Zustand global state
+      const token = useAuthStore.getState().token;
       
       if (!token) {
-        throw new Error('No authentication token found. Please login again.');
+        localStorage.clear();
+        throw new Error('AUTH_ERROR');
       }
 
-      // 2. REAL BACKEND CALL WITH AUTHORIZATION HEADER
+      // Send the request to the backend API with 'health' domain
       const response = await fetch('http://localhost:5000/api/chat', { 
         method: 'POST',
-        headers: {
+        headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // <--- CRITICAL: Sends token to pass backend security
+          'Authorization': `Bearer ${token}` 
         },
         body: JSON.stringify({
           message: newUserMsg.text,
-          domain: 'health' // <--- CRITICAL: Tells backend to use Health strict context
+          domain: 'health' // Strict health domain
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // If token is expired or invalid, redirect to login
+        // Handle unauthorized access by redirecting to login
         if (response.status === 401) {
-          localStorage.removeItem('token');
+          localStorage.clear();
           navigate('/login');
           return;
         }
-        throw new Error(data.message || 'Network response was not ok');
+        throw new Error('NETWORK_ERROR');
       }
       
-      const newBotMsg: Message = { 
-        id: Date.now().toString(), 
-        text: data.reply, 
-        isBot: true 
-      };
+      // Add the AI's response to the chat interface
+      const newBotMsg: Message = { id: Date.now().toString(), text: data.reply, isBot: true };
       setMessages((prev) => [...prev, newBotMsg]);
 
     } catch (error: any) {
-       console.error("Error communicating with AI:", error);
+       console.error("Chat Error:", error);
+       
+       // UI/UX Graceful Error Handling: Display friendly Amharic messages
+       let errorMessage = "ይቅርታ፣ ከሰርቨሩ ጋር መገናኘት አልተቻለም። እባክዎ ኢንተርኔትዎን አረጋግጠው እንደገና ይሞክሩ።";
+       if (error.message === 'AUTH_ERROR') {
+           errorMessage = "የደህንነት ቁልፍዎ ጊዜው አልፎበታል፣ እባክዎ ከአካውንትዎ ወጥተው እንደገና ይግቡ።";
+       }
+
+       // Flag the message as an error to apply specific styling (red bubble)
        const errorMsg: Message = {
            id: Date.now().toString(),
-           text: error.message === 'No authentication token found. Please login again.' 
-            ? "የደህንነት ቁልፍ (Token) አልተገኘም፣ እባክዎ ከአካውንትዎ ወጥተው እንደገና ይግቡ።"
-            : "ይቅርታ፣ ከሰርቨሩ ጋር መገናኘት አልተቻለም። እባክዎ ትንሽ ቆይተው እንደገና ይሞክሩ።",
-           isBot: true
+           text: errorMessage,
+           isBot: true,
+           isError: true 
        };
        setMessages((prev) => [...prev, errorMsg]);
     } finally {
+        // Stop the loading animation
         setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] relative">
-      {/* Chat Messages Area */}
-      <div className="flex-1 overflow-y-auto px-2 py-4 space-y-4 pb-20 scrollbar-hide">
+    <div className="flex flex-col h-[calc(100vh-140px)] relative bg-slate-50/50">
+      
+      {/* 1. Chat Area */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 pb-28 scrollbar-hide">
         
-        {/* Strict Domain Disclaimer */}
-        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-xl p-3 mx-4 mb-6 text-center shadow-sm">
-          <p className="text-xs text-red-700 font-medium leading-relaxed">
-            <span className="font-bold">ማሳሰቢያ፡</span> ይህ AI የጤና ኤክስፐርት ብቻ ነው። እባክዎ ከ አጠቃላይ ጤንነት፣ አመጋገብ እና የመጀመሪያ ደረጃ ህክምና ውጪ ያሉ ጥያቄዎችን ከመጠየቅ ይቆጠቡ።
+        {/* Star Think Health Disclaimer Banner */}
+        <div className="bg-red-50/80 backdrop-blur-sm border border-red-100 rounded-2xl p-4 mx-auto max-w-[90%] text-center shadow-sm">
+          <p className="text-xs text-red-800 font-medium leading-relaxed">
+            <HeartPulse className="inline-block w-4 h-4 text-red-500 mr-1 mb-0.5" />
+            <span className="font-bold">Star Think ማሳሰቢያ፡</span> ይህ AI የጤና ኤክስፐርት ብቻ ነው። ይህ ለህክምና ምክር ምትክ አይደለም።
           </p>
         </div>
 
+        {/* Render Chat Messages */}
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.isBot ? 'justify-start' : 'justify-end'} animate-fade-in-up`}>
-            <div className={`flex max-w-[85%] gap-2 ${msg.isBot ? 'flex-row' : 'flex-row-reverse'}`}>
+            <div className={`flex max-w-[85%] gap-2.5 ${msg.isBot ? 'flex-row' : 'flex-row-reverse'}`}>
               
-              {/* Avatar Image */}
+              {/* User and AI Avatars */}
               <div className="flex-shrink-0 mt-auto mb-1">
                 {msg.isBot ? (
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-red-500 to-rose-400 flex items-center justify-center shadow-md">
                     <HeartPulse className="w-4 h-4 text-white" />
                   </div>
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center shadow-md">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-gray-700 to-gray-900 flex items-center justify-center shadow-md">
                     <User className="w-4 h-4 text-white" />
                   </div>
                 )}
               </div>
 
-              {/* Message Bubble */}
-              <div className={`p-3.5 rounded-2xl shadow-sm text-[15px] leading-relaxed ${
-                msg.isBot 
-                  ? 'bg-white border border-gray-100 text-gray-800 rounded-bl-sm' 
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-sm shadow-blue-200'
+              {/* Message Bubble Styling */}
+              <div className={`p-4 rounded-3xl shadow-sm text-[15px] leading-relaxed ${
+                msg.isError 
+                  ? 'bg-red-50 border border-red-100 text-red-700 rounded-bl-sm' // Error state styling
+                  : msg.isBot 
+                    ? 'bg-white border border-gray-100 text-gray-800 rounded-bl-sm' // AI message styling
+                    : 'bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-br-sm shadow-red-200' // User message styling
               }`}>
+                {msg.isError && <AlertCircle className="w-4 h-4 inline-block mr-2 mb-0.5" />}
                 {msg.text}
               </div>
-
             </div>
           </div>
         ))}
         
-        {/* Loading Indicator */}
+        {/* 2. Beautiful Loading Animation (Typing Indicator) */}
         {isLoading && (
           <div className="flex justify-start animate-fade-in-up">
-            <div className="flex gap-2 max-w-[80%] flex-row">
+            <div className="flex gap-2.5 max-w-[80%] flex-row">
               <div className="flex-shrink-0 mt-auto mb-1">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-red-500 to-rose-400 flex items-center justify-center shadow-md">
-                  <Loader2 className="w-4 h-4 text-white animate-spin" />
-               </div>
+                  <HeartPulse className="w-4 h-4 text-white" />
+                </div>
               </div>
-              <div className="p-4 rounded-2xl bg-white border border-gray-100 rounded-bl-sm flex items-center gap-1.5 shadow-sm">
+              <div className="px-5 py-4 rounded-3xl bg-white border border-gray-100 rounded-bl-sm flex items-center gap-1.5 shadow-sm h-[52px]">
                 <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 <div className="w-2 h-2 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
@@ -156,26 +169,26 @@ export default function Health() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Sticky Bottom Input Area */}
-      <div className="absolute bottom-2 left-0 right-0 bg-white/80 backdrop-blur-xl border border-gray-200/50 p-2 rounded-3xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]">
-        <form onSubmit={handleSendMessage} className="flex items-center gap-2 relative">
+      {/* 3. Input Area - Mobile Optimized (Pill shape) */}
+      <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-xl border border-gray-200 p-2 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+        <form onSubmit={handleSendMessage} className="flex items-center gap-2">
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="የጤና ጥያቄዎን ይጻፉ..."
-            className="flex-1 bg-gray-100 text-gray-800 placeholder-gray-400 px-5 py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
+            placeholder="የጤና ጥያቄዎን እዚህ ይጻፉ..."
+            className="flex-1 bg-transparent text-gray-800 placeholder-gray-400 px-4 py-2 focus:outline-none focus:ring-0"
           />
           <button
             type="submit"
             disabled={!inputText.trim() || isLoading}
-            className={`p-3.5 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
               !inputText.trim() || isLoading
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-200 hover:scale-105 active:scale-95'
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-red-500 text-white shadow-lg shadow-red-200 hover:scale-105 active:scale-95'
             }`}
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-5 h-5 ml-1" />
           </button>
         </form>
       </div>

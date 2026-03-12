@@ -21,7 +21,7 @@ export default function Subscribe() {
             <h2 className="text-xl font-bold">ያልተገደበ የ AI ምክር</h2>
           </div>
           <p className="text-blue-100 text-sm leading-relaxed">
-            በስፖርት እና መዝናኛ፣ ጤና እና ትምህርት ዘርፍ የ Ethio AIን ሙሉ አገልግሎት ለማግኘት አሁኑኑ ይመዝገቡ።
+            በስፖርት እና መዝናኛ፣ ጤና እና ትምህርት ዘርፍ የ Star Thinkን ሙሉ አገልግሎት ለማግኘት አሁኑኑ ይመዝገቡ።
           </p>
         </div>
 

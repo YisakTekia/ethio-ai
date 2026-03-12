@@ -89,7 +89,7 @@ export default function Login() {
             </span>
           </div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-            እንኳን ወደ <span className="text-blue-600">RootGate</span> በደህና መጡ
+            እንኳን ወደ <span className="text-blue-600">Star Think</span> በደህና መጡ
           </h1>
           <p className="text-gray-500 mt-2 font-medium">
             {step === 1 && 'ለመጀመር ስልክ ቁጥርዎን ያስገቡ'}

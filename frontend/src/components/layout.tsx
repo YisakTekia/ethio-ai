@@ -23,7 +23,7 @@ export default function Layout() {
             <Home className="w-5 h-5" />
           </div>
           <h1 className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
-            RootGate
+            Star Think
           </h1>
         </div>
         <Link to="/profile" className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition active:scale-95">
