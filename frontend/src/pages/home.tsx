@@ -19,18 +19,18 @@ export default function Home() {
       if (!token) return;
       try {
         
-        const userRes = await fetch('https://ethio-ai-api.onrender.com/api/user/profile', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const userRes = await fetch('https://ethio-ai-backend.onrender.com/api/user/profile', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
         if (userRes.ok) {
           const userData = await userRes.json();
           setDbUser(userData.data);
         }
 
         
-        const tipRes = await fetch('https://ethio-ai-api.onrender.com/api/quiz/tip', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const tipRes = await fetch('https://ethio-ai-backend.onrender.com/api/quiz/tip', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
         if (tipRes.ok) {
           const tipData = await tipRes.json();
           if (tipData.data) setDailyTip(tipData.data);
