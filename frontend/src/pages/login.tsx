@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Phone, KeyRound, ArrowRight, Loader2, ShieldCheck, Sparkles, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
-const API_URL = 'https://ethio-ai-backend.onrender.com/api/auth'; 
+const API_URL = 'https://ethio-ai-backend.onrender.com'; 
 
 export default function Login() {
   const navigate = useNavigate();
