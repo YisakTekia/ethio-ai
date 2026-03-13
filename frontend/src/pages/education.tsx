@@ -51,7 +51,7 @@ export default function Education() {
       }
 
       // Send the request to the backend API with 'education' domain
-      const response = await fetch('https://ethio-ai-api.onrender.com/api/auth/api/chat', { 
+      const response = await fetch('https://ethio-ai-backend.onrender.com/api/auth/api/chat', { 
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
