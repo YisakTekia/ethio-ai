@@ -13,12 +13,13 @@ export default function Home() {
   const [dailyTip, setDailyTip] = useState<{ title: string; content: string } | null>(null);
 
   // 1. Fetch Fresh User Profile & Daily Tip from Database
+  
   useEffect(() => {
     const fetchHomeData = async () => {
       if (!token) return;
       try {
-        // Fetch User Profile (to get the updated name)
-        const userRes = await fetch('https://ethio-ai-api.onrender.com/api/auth/api/user/profile', {
+        
+        const userRes = await fetch('https://ethio-ai-api.onrender.com/api/user/profile', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (userRes.ok) {
@@ -26,8 +27,8 @@ export default function Home() {
           setDbUser(userData.data);
         }
 
-        // Fetch Daily Tip
-        const tipRes = await fetch('https://ethio-ai-api.onrender.com/api/auth/api/quiz/tip', {
+        
+        const tipRes = await fetch('https://ethio-ai-api.onrender.com/api/quiz/tip', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (tipRes.ok) {

@@ -13,6 +13,7 @@ import authRoutes from './routes/authRoutes';
 import quizRoutes from './routes/quizRoutes';
 import adminRoutes from './routes/adminRoutes';
 import userRoutes from './routes/userRoutes';
+
 // Load environment variables
 dotenv.config();
 
