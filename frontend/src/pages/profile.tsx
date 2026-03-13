@@ -1,4 +1,3 @@
-// src/pages/Profile.tsx
 import { useState, useEffect } from 'react';
 import { ArrowLeft, User, ShieldCheck, LogOut, ChevronRight, Info, Zap, PhoneCall, Edit2, Check, Loader2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +11,6 @@ export default function Profile() {
   const [dbUser, setDbUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // States for Edit Name Feature
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -29,7 +27,6 @@ export default function Profile() {
     navigate('/login');
   };
 
-  // Fetch User Profile
   useEffect(() => {
     const fetchRealProfile = async () => {
       if (!token) {
@@ -56,7 +53,6 @@ export default function Profile() {
     fetchRealProfile();
   }, [token]);
 
-  // Save Name Function
   const handleSaveName = async () => {
     if (!newName.trim()) {
       setIsEditingName(false);
@@ -102,7 +98,6 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-slate-50 p-6 pb-24 relative">
       
-      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 animate-fade-in-down w-[90%] max-w-sm">
           <div className="bg-gray-900/95 backdrop-blur-md text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-start gap-3 text-[13px] leading-relaxed border border-gray-700">
@@ -112,7 +107,6 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Top Navigation */}
       <div className="flex items-center mb-6 pt-4 animate-fade-in-up">
         <button onClick={() => navigate(-1)} className="p-2.5 bg-white rounded-full shadow-sm mr-4 active:scale-95 transition-transform border border-gray-100">
           <ArrowLeft className="w-5 h-5 text-gray-700" />
@@ -122,7 +116,6 @@ export default function Profile() {
 
       <div className="space-y-5 max-w-md mx-auto animate-fade-in-up">
         
-        {/* Profile Card */}
         <div className="bg-gradient-to-br from-blue-600 to-indigo-800 rounded-[24px] p-6 shadow-lg shadow-blue-200 flex flex-col items-center relative overflow-hidden">
           <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
           
@@ -130,7 +123,6 @@ export default function Profile() {
             <User className="w-10 h-10 text-white" />
           </div>
           
-          {/* Editable Name Section */}
           <div className="relative z-10 flex flex-col items-center w-full mb-3">
             {isEditingName && !isGuest ? (
               <div className="flex items-center gap-2 bg-white/20 p-1.5 rounded-xl w-full max-w-[250px]">
@@ -162,7 +154,6 @@ export default function Profile() {
               </div>
             )}
             
-            {/* Phone Number Display */}
             {!isGuest && (
               <p className="text-blue-200 text-sm mt-1">{dbUser?.phone}</p>
             )}
@@ -174,7 +165,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Action Menu List */}
         <div className="bg-white rounded-3xl p-2 shadow-sm border border-gray-100">
           <button onClick={() => showPopup("የዕለቱን ጥያቄዎች (Quiz) በፍጥነት በመመለስ ካሸነፉ፣ የሞባይል ካርድ ሽልማትዎ ያለምንም መዘግየት በቀጥታ ወደ ስልክ ቁጥርዎ ይላካል (Direct Top-up)።")} className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors active:scale-[0.98]">
             <div className="flex items-center gap-3">
@@ -195,7 +185,6 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Secure Logout/Login Button */}
         <button 
           onClick={handleLogout}
           className={`w-full flex items-center justify-center gap-2 font-bold py-4 rounded-2xl border active:scale-[0.98] transition-all mt-6 ${isGuest ? 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100' : 'bg-red-50/50 text-red-600 border-red-100 hover:bg-red-50'}`}
