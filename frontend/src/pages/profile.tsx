@@ -39,9 +39,9 @@ export default function Profile() {
         return;
       }
       try {
-        const response = await fetch('https://ethio-ai-backend.onrender.com/api/auth/api/user/profile', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const response = await fetch('https://ethio-ai-backend.onrender.com/api/user/profile', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
         if (response.ok) {
           const data = await response.json();
           setDbUser(data.data);
@@ -66,8 +66,8 @@ export default function Profile() {
     }
     setIsSaving(true);
     try {
-      const response = await fetch('https://ethio-ai-backend.onrender.com/api/auth/api/user/update-name', {
-        method: 'PUT',
+      const response = await fetch('https://ethio-ai-backend.onrender.com/api/user/update-name', {
+  method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}` 
