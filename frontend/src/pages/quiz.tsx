@@ -1,187 +1,229 @@
 // src/pages/Quiz.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, CheckCircle2, XCircle, ArrowLeft, Clock, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Timer, CheckCircle2, XCircle, Loader2, Trophy, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+
+interface QuizData {
+  _id: string;
+  question: string;
+  options: string[];
+}
 
 export default function Quiz() {
   const navigate = useNavigate();
-  
-  // Get user data and the login function to update points globally
-  const user = useAuthStore((state) => state.user);
-  const login = useAuthStore((state) => state.login);
-  
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // States to store backend responses
-  const [backendMessage, setBackendMessage] = useState('');
-  const [backendError, setBackendError] = useState('');
+  const token = useAuthStore((state) => state.token);
 
-  // Daily Question details (In a full app, this would also come from the backend)
-  const dailyQuestion = {
-    text: 'በኦሎምፒክ ታሪክ ለመጀመሪያ ጊዜ በባዶ እግሩ ሮጦ የማራቶን ወርቅ ያመጣው ኢትዮጵያዊ አትሌት ማን ነው?',
-    options: ['ቀነኒሳ በቀለ', 'ሀይሌ ገብረስላሴ', 'አበበ ቢቂላ', 'ምሩፅ ይፍጠር'],
-    correctAnswerIndex: 2, 
-  };
+  // States
+  const [quiz, setQuiz] = useState<QuizData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState(15);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [result, setResult] = useState<{ isCorrect: boolean; pointsAwarded: number } | null>(null);
 
-  const handleSubmit = async () => {
-    if (selectedAnswer === null) return;
+  useEffect(() => {
+    const fetchDailyQuiz = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/api/quiz/daily', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.status === 404) {
+          throw new Error('NO_QUIZ');
+        }
+        
+        if (response.status === 403) {
+          const data = await response.json();
+          throw new Error(data.message); 
+        }
+
+        if (!response.ok) {
+          throw new Error('NETWORK_ERROR');
+        }
+
+        const data = await response.json();
+        setQuiz(data.data);
+      } catch (err: any) {
+        if (err.message === 'NO_QUIZ') {
+          setError('ለዛሬ የተዘጋጀ ጥያቄ የለም። እባክዎ ነገ ተመልሰው ይሞክሩ!');
+        } else if (err.message.includes('ለዛሬ') || err.message.includes('ሙከራ')) {
+          setError(err.message); 
+        } else {
+          setError('ከሰርቨር ጋር መገናኘት አልተቻለም።');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDailyQuiz();
+  }, [token]);
+
+  useEffect(() => {
+    if (isLoading || error || result || !quiz) return;
+
+    if (timeLeft > 0) {
+      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timerId);
+    } else if (timeLeft === 0 && !result && !isSubmitting) {
+      handleSubmitQuiz(true); 
+    }
+  }, [timeLeft, isLoading, error, result, quiz, isSubmitting]);
+
+  const handleSubmitQuiz = async (timeOut = false) => {
+    if ((selectedOption === null && !timeOut) || !quiz) return;
     
-    setIsLoading(true);
-    setBackendError('');
-    
-    const isAnswerCorrect = selectedAnswer === dailyQuestion.correctAnswerIndex;
-
+    setIsSubmitting(true);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('No authentication token found. Please login again.');
-
-      // Make the actual API call to submit the quiz
-      const response = await fetch('http://localhost:5000/api/quiz/submit', {
+      const response = await fetch('http://localhost:5000/api/auth/api/quiz/submit', {
         method: 'POST',
-        headers: {
+        headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}` 
         },
-        body: JSON.stringify({ isCorrect: isAnswerCorrect })
+        body: JSON.stringify({
+          quizId: quiz._id,
+          selectedIndex: timeOut ? -1 : selectedOption,
+        })
       });
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong while submitting.');
+      
+      if (response.ok) {
+        setResult({ isCorrect: data.isCorrect, pointsAwarded: data.pointsAwarded });
+      } else {
+        throw new Error(data.message || 'Error submitting quiz');
       }
-
-      // Success! The backend accepted the attempt.
-      setIsSubmitted(true);
-      setBackendMessage(data.message);
-
-      // If the user won points, update their global state immediately so the Profile shows it
-      if (data.rewardPoints > 0 && user) {
-        login({
-          ...user,
-          points: (user.points || 0) + data.rewardPoints
-        });
-      }
-
     } catch (err: any) {
-      console.error('Quiz submission error:', err);
-      // This catches the "already attempted today" error from the backend
-      setBackendError(err.message || 'ከሰርቨር ጋር መገናኘት አልተቻለም።');
+      console.error("Quiz Submission Error:", err);
+      if (err.message && err.message.includes('ለዛሬ')) {
+        setError(err.message);
+      } else {
+        alert("መልስዎን መላክ አልተቻለም። እባክዎ ኢንተርኔትዎን ያረጋግጡ።");
+      }
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 p-6 pb-24 flex flex-col animate-fade-in-up">
-      {/* Header */}
-      <div className="flex items-center mb-6 pt-4">
-        <button onClick={() => navigate(-1)} className="p-2 bg-white rounded-full shadow-sm mr-4 active:scale-95 transition-transform">
-          <ArrowLeft className="w-6 h-6 text-gray-700" />
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center pb-20">
+        <Loader2 className="w-10 h-10 text-purple-600 animate-spin mb-4" />
+        <p className="text-gray-500 font-bold tracking-widest text-sm uppercase">ጥያቄውን እያመጣ ነው...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 p-6 flex flex-col items-center justify-center pb-20 text-center animate-fade-in-up">
+        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
+          <Trophy className="w-10 h-10 text-gray-400" />
+        </div>
+        <h2 className="text-xl font-extrabold text-gray-900 mb-2">የዕለቱ ጥያቄ አብቅቷል!</h2>
+        <p className="text-gray-500 text-sm leading-relaxed mb-8 max-w-[250px]">{error}</p>
+        <button onClick={() => navigate('/')} className="bg-purple-600 text-white font-bold py-3.5 px-8 rounded-2xl shadow-lg shadow-purple-200 active:scale-95 transition-all">
+          ወደ ዋናው ገጽ ተመለስ
         </button>
-        <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-          <Trophy className="w-6 h-6 text-yellow-500" /> የዕለቱ ጥያቄ
-        </h1>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 relative pb-24 animate-fade-in-up">
+      <div className="bg-white px-6 pt-6 pb-4 sticky top-0 z-40 shadow-sm border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <button onClick={() => navigate('/')} className="p-2.5 bg-gray-50 rounded-full mr-4 active:scale-95 transition-transform border border-gray-100">
+              <ArrowLeft className="w-5 h-5 text-gray-700" />
+            </button>
+            <h1 className="text-lg font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-purple-600" /> የዕለቱ ጥያቄ
+            </h1>
+          </div>
+          
+          {!result && (
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-sm transition-colors ${timeLeft <= 5 ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-purple-50 text-purple-600'}`}>
+              <Timer className="w-4 h-4" />
+              <span>{timeLeft} ሰከንድ</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex-1">
-        
-        {/* Tiered Rewards Display */}
-        <div className="bg-purple-50 text-purple-800 text-sm font-bold px-4 py-3 rounded-xl inline-block mb-6 border border-purple-100 w-full shadow-inner">
-          <div className="flex items-center gap-2 mb-2 text-red-500">
-            <Clock className="w-4 h-4 animate-pulse" />
-            <span className="text-xs">ለ 3 ፈጣኖች ብቻ የተዘጋጀ ሽልማት</span>
-          </div>
-          <ul className="space-y-1 text-xs">
-            <li className="flex justify-between items-center bg-white p-2 rounded-lg">
-              <span>🥇 1ኛ ፈጥኖ ለሚመልስ፡</span> <span className="text-green-600 font-extrabold">200 ብር ካርድ</span>
-            </li>
-            <li className="flex justify-between items-center bg-white p-2 rounded-lg">
-              <span>🥈 2ኛ ፈጥኖ ለሚመልስ፡</span> <span className="text-green-600 font-extrabold">100 ብር ካርድ</span>
-            </li>
-            <li className="flex justify-between items-center bg-white p-2 rounded-lg">
-              <span>🥉 3ኛ ፈጥኖ ለሚመልስ፡</span> <span className="text-green-600 font-extrabold">50 ብር ካርድ</span>
-            </li>
-          </ul>
-        </div>
-
-        {/* Backend Error Message (e.g. "Already attempted today") */}
-        {backendError && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl flex items-start gap-2 text-sm font-medium animate-fade-in-up">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-            <p>{backendError}</p>
+      <div className="p-6 max-w-md mx-auto">
+        {!result && (
+          <div className="w-full bg-gray-200 rounded-full h-1.5 mb-6 overflow-hidden">
+            <div className={`h-1.5 rounded-full transition-all duration-1000 ${timeLeft <= 5 ? 'bg-red-500' : 'bg-purple-600'}`} style={{ width: `${(timeLeft / 15) * 100}%` }}></div>
           </div>
         )}
 
-        <h2 className="text-xl font-bold text-gray-800 mb-6 leading-relaxed">
-          {dailyQuestion.text}
-        </h2>
-
-        {/* Options */}
-        <div className="space-y-3 mb-8">
-          {dailyQuestion.options.map((option, index) => {
-            const isSelected = selectedAnswer === index;
-            const isCorrect = isSubmitted && index === dailyQuestion.correctAnswerIndex;
-            const isWrong = isSubmitted && isSelected && index !== dailyQuestion.correctAnswerIndex;
-
-            return (
-              <button
-                key={index}
-                disabled={isSubmitted || isLoading || !!backendError}
-                onClick={() => setSelectedAnswer(index)}
-                className={`w-full text-left p-4 rounded-2xl border-2 transition-all flex justify-between items-center ${
-                  isCorrect ? 'border-green-500 bg-green-50' : 
-                  isWrong ? 'border-red-500 bg-red-50' : 
-                  isSelected ? 'border-purple-500 bg-purple-50' : 
-                  'border-gray-100 bg-white hover:border-purple-200'
-                } ${isSubmitted || !!backendError ? 'cursor-default' : 'cursor-pointer active:scale-[0.98]'}`}
-              >
-                <span className={`font-semibold ${isCorrect ? 'text-green-700' : isWrong ? 'text-red-700' : isSelected ? 'text-purple-700' : 'text-gray-700'}`}>
-                  {option}
-                </span>
-                {isCorrect && <CheckCircle2 className="w-5 h-5 text-green-500" />}
-                {isWrong && <XCircle className="w-5 h-5 text-red-500" />}
-              </button>
-            );
-          })}
+        <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
+          <h2 className="text-lg font-bold text-gray-900 leading-relaxed">
+            {quiz?.question}
+          </h2>
         </div>
 
-        {/* Submit Button */}
-        {!isSubmitted && !backendError ? (
+        <div className="space-y-3 mb-8">
+          {quiz?.options.map((option, idx) => (
+            <button
+              key={idx}
+              disabled={isSubmitting || result !== null}
+              onClick={() => setSelectedOption(idx)}
+              className={`w-full text-left p-4 rounded-2xl border-2 font-medium transition-all duration-200 flex items-center justify-between ${
+                result !== null
+                  ? selectedOption === idx
+                    ? result.isCorrect 
+                      ? 'bg-green-50 border-green-500 text-green-700' 
+                      : 'bg-red-50 border-red-500 text-red-700'
+                    : 'bg-gray-50 border-gray-100 text-gray-400 opacity-50'
+                  : selectedOption === idx
+                    ? 'bg-purple-50 border-purple-500 text-purple-700 shadow-sm'
+                    : 'bg-white border-gray-100 text-gray-700 hover:border-purple-200 hover:bg-purple-50/50 active:scale-[0.98]'
+              }`}
+            >
+              <span>{option}</span>
+              {result !== null && selectedOption === idx && (
+                result.isCorrect ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <XCircle className="w-5 h-5 text-red-600" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {!result ? (
           <button
-            onClick={handleSubmit}
-            disabled={selectedAnswer === null || isLoading}
-            className={`w-full py-4 rounded-2xl font-bold transition-all shadow-md flex items-center justify-center gap-2 ${
-              selectedAnswer !== null && !isLoading
-                ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-purple-200 hover:scale-[1.02] active:scale-[0.98]'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            onClick={() => handleSubmitQuiz(false)}
+            disabled={selectedOption === null || isSubmitting}
+            className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all duration-300 ${
+              selectedOption === null || isSubmitting
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-purple-600 text-white shadow-lg shadow-purple-200 hover:bg-purple-700 active:scale-95'
             }`}
           >
-            {isLoading ? <><Loader2 className="w-5 h-5 animate-spin" /> እባክዎ ይጠብቁ...</> : 'መልሴን አረጋግጥ'}
+            {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : 'መልሱን ላክ (Submit)'}
           </button>
-        ) : isSubmitted ? (
-          <div className={`p-4 rounded-2xl text-center border animate-fade-in-up ${
-            selectedAnswer === dailyQuestion.correctAnswerIndex 
-              ? 'bg-green-50 border-green-200' 
-              : 'bg-red-50 border-red-200'
-          }`}>
-            <h3 className={`font-bold text-lg mb-1 ${selectedAnswer === dailyQuestion.correctAnswerIndex ? 'text-green-700' : 'text-red-700'}`}>
-              {selectedAnswer === dailyQuestion.correctAnswerIndex ? '🎉 ትክክል ነው!' : '😔 አልተሳካም'}
+        ) : (
+          <div className={`p-6 rounded-[24px] border text-center animate-fade-in-up ${result.isCorrect ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm ${result.isCorrect ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+              {result.isCorrect ? <Trophy className="w-8 h-8" /> : <AlertCircle className="w-8 h-8" />}
+            </div>
+            <h3 className={`text-xl font-extrabold mb-1 ${result.isCorrect ? 'text-green-800' : 'text-red-800'}`}>
+              {result.isCorrect ? 'ትክክለኛ መልስ! 🎉' : 'ይቅርታ፣ ተሳስተዋል!'}
             </h3>
-            {/* Display the exact dynamic message returned from the backend */}
-            <p className={`text-sm mt-2 font-medium leading-relaxed ${selectedAnswer === dailyQuestion.correctAnswerIndex ? 'text-green-700' : 'text-red-600'}`}>
-              {backendMessage || (selectedAnswer === dailyQuestion.correctAnswerIndex 
-                ? 'መልሱን ትክክል መልሰዋል! ሽልማት ውስጥ መግባትዎን ለማረጋገጥ ውጤትዎን ለባክኤንድ ልከነዋል።' 
-                : 'የዛሬውን ጥያቄ ስተዋል። ነገ መልሰው ይሞክሩ!')}
+            <p className={`text-sm font-bold ${result.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+              {result.isCorrect ? `+${result.pointsAwarded} ነጥብ አግኝተዋል` : 'በቀጣይ ይሞክሩ'}
             </p>
-            <button onClick={() => navigate('/')} className="mt-4 text-sm font-bold text-gray-600 underline hover:text-gray-900">
+            <button onClick={() => navigate('/')} className={`w-full mt-6 py-3.5 rounded-xl font-bold transition-all active:scale-95 ${result.isCorrect ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-600 text-white hover:bg-red-700'}`}>
               ወደ ዋናው ገጽ ተመለስ
             </button>
           </div>
-        ) : null}
+        )}
+
       </div>
     </div>
   );

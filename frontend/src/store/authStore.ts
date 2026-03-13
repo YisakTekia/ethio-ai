@@ -1,55 +1,35 @@
 // src/store/authStore.ts
 import { create } from 'zustand';
 
-// User structure with 'points' added
-interface User {
-  id: string;
-  phone: string;
-  status?: 'ok' | 'stop';
-  isPaid: boolean;
-  points: number; 
+interface AuthState {
+  user: any | null;
+  token: string | null;
+  setAuth: (user: any, token: string) => void;
+  logout: () => void;
 }
 
-interface AuthState {
-  user: User | null;
-  token: string | null; // 🔴 1. ቶከን ማከማቻ ጨመርን
-  isAuthenticated: boolean;
-  
-  login: (token: string, userData: User) => void; // 🔴 2. ቶከንም እንዲቀበል አደረግን
-  logout: () => void;
-  updatePaymentStatus: (status: boolean) => void;
-  addPoints: (points: number) => void; 
-}
+const getSavedUser = () => {
+  try {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  } catch (error) {
+    return null;
+  }
+};
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  // 🔴 3. ገጹ Refresh ሲደረግ ቶከኑ እንዳይጠፋ ከ localStorage እናነበዋለን
-  token: localStorage.getItem('token') || null, 
-  isAuthenticated: !!localStorage.getItem('token'),
+  user: getSavedUser(),
+  token: localStorage.getItem('token') || null,
 
-  login: (token, userData) => {
-    localStorage.setItem('token', token); // ደህንነቱ የተጠበቀ ካርድ ሴቭ እናደርጋለን
-    set({ 
-      token: token,
-      user: userData, 
-      isAuthenticated: true 
-    });
+  setAuth: (user, token) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user)); 
+    set({ user, token });
   },
 
   logout: () => {
     localStorage.removeItem('token');
-    set({ 
-      user: null, 
-      token: null,
-      isAuthenticated: false 
-    });
+    localStorage.removeItem('user');
+    set({ user: null, token: null });
   },
-
-  updatePaymentStatus: (status) => set((state) => ({
-    user: state.user ? { ...state.user, isPaid: status } : null
-  })),
-
-  addPoints: (points) => set((state) => ({
-    user: state.user ? { ...state.user, points: state.user.points + points } : null
-  })),
 }));

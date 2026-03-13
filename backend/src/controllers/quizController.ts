@@ -1,93 +1,69 @@
-// src/controllers/quizController.ts
 import { Response } from 'express';
-import { AuthRequest } from '../middlewares/authMiddleware';
-import QuizAttempt from '../models/quizAttempt';
+import DailyQuestion from '../models/dailyQuestion';
 import User from '../models/User';
+import { AuthRequest } from '../middlewares/authMiddleware';
+import Tip from '../models/tip';
 
-/**
- * Handles daily quiz submissions, enforces 1-attempt-per-day limit, 
- * and calculates rewards based on response speed (Top 3 winners).
- * Rewards: 1st = 200, 2nd = 100, 3rd = 50 points/Birr.
- */
-export const submitQuiz = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getDailyQuiz = async (req: AuthRequest, res: Response | any) => {
   try {
-    const userId = req.user?._id;
-    const { isCorrect } = req.body; // Frontend sends boolean: true or false
-
-    if (!userId) {
-      res.status(401).json({ status: 'error', message: 'User not authenticated.' });
-      return;
+    const quiz = await DailyQuestion.findOne({ isActive: true }).sort({ createdAt: -1 });
+    if (!quiz) {
+      return res.status(404).json({ message: 'No active quiz found' });
     }
-
-    // 1. Get today's date formatted as YYYY-MM-DD
-    const today = new Date();
-    const dateStr = today.toISOString().split('T')[0];
-
-    // 2. Check if user already attempted the quiz today
-    const existingAttempt = await QuizAttempt.findOne({ userId, dateStr });
-    if (existingAttempt) {
-      res.status(400).json({ 
-        status: 'error', 
-        message: 'You have already attempted the quiz today. Please come back tomorrow!' 
-      });
-      return;
-    }
-
-    // 3. Record the new attempt with the exact timestamp
-    const attempt = await QuizAttempt.create({
-      userId,
-      dateStr,
-      isCorrect
-    });
-
-    let rewardPoints = 0;
-    let rank = 0;
-
-    // 4. Calculate rewards ONLY if the answer is correct
-    if (isCorrect) {
-      // Find how many users answered correctly today BEFORE this exact attempt
-      const previousCorrectCount = await QuizAttempt.countDocuments({
-        dateStr,
-        isCorrect: true,
-        _id: { $ne: attempt._id },
-        answeredAt: { $lt: attempt.answeredAt }
-      });
-
-      // Determine rank (previous winners + 1)
-      rank = previousCorrectCount + 1;
-
-      // Assign rewards based on rank
-      if (rank === 1) rewardPoints = 200;
-      else if (rank === 2) rewardPoints = 100;
-      else if (rank === 3) rewardPoints = 50;
-      else rewardPoints = 0; // Late correct answer, no monetary reward
-
-      // 5. Update the user's points securely in the database
-      if (rewardPoints > 0) {
-        await User.findByIdAndUpdate(userId, {
-          $inc: { points: rewardPoints } // $inc safely adds points without race conditions
-        });
-      }
-    }
-
-    // 6. Send the result back to the frontend
+    
     res.status(200).json({
-      status: 'success',
-      isCorrect,
-      rank: isCorrect ? rank : null,
-      rewardPoints,
-      message: rewardPoints > 0 
-        ? `Congratulations! You ranked #${rank} and won ${rewardPoints} Birr!` 
-        : isCorrect 
-          ? `Correct answer, but you were rank #${rank}. Top 3 already won today's prizes.` 
-          : `Incorrect answer. Try again tomorrow!`
+      success: true,
+      data: {
+        _id: quiz._id,
+        question: quiz.question,
+        options: quiz.options
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching quiz' });
+  }
+};
+
+
+export const submitQuiz = async (req: AuthRequest, res: Response | any) => {
+  try {
+    const { quizId, selectedIndex } = req.body; 
+    
+    const user: any = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const today = new Date().setHours(0, 0, 0, 0);
+    if (user.lastQuizDate && new Date(user.lastQuizDate).setHours(0, 0, 0, 0) === today) {
+      return res.status(403).json({ success: false, message: 'ለዛሬ የሚፈቀድልዎትን አንድ ሙከራ ተጠቅመዋል።' });
+    }
+
+    const quiz: any = await DailyQuestion.findById(quizId);
+    if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
+
+    const isCorrect = quiz.correctIndex === selectedIndex;
+
+    await User.findByIdAndUpdate(req.user._id, {
+      $set: { 
+        lastQuizDate: new Date(), 
+        lastQuizCorrect: isCorrect
+      } 
     });
 
-  } catch (error) {
-    console.error('[QUIZ CONTROLLER ERROR]:', error);
-    res.status(500).json({ 
-      status: 'error', 
-      message: 'An internal server error occurred while processing the quiz.' 
+    res.status(200).json({
+      success: true,
+      isCorrect,
+      message: isCorrect ? 'Correct answer!' : 'Wrong answer'
     });
+  } catch (error) {
+    res.status(500).json({ message: 'Error submitting quiz' });
+  }
+  
+};
+export const getDailyTip = async (req: any, res: any) => {
+  try {
+    const tip = await Tip.findOne().sort({ createdAt: -1 });
+    res.status(200).json({ success: true, data: tip });
+  } catch (error) {
+    res.status(500).json({ message: 'ምክር ማምጣት አልተቻለም' });
   }
 };

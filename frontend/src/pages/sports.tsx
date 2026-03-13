@@ -51,7 +51,7 @@ export default function Sports() {
       }
 
       // Send the request to the backend API
-      const response = await fetch('http://localhost:5000/api/chat', { 
+      const response = await fetch('http://localhost:5000/api/auth/api/chat', { 
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

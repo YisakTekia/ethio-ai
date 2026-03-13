@@ -1,16 +1,14 @@
-// src/routes/adminRoutes.ts
-import { Router } from 'express';
-import { getDashboardStats } from '../controllers/adminController';
-import { protect } from '../middlewares/authMiddleware';
-import { adminOnly } from '../middlewares/adminMiddleware';
+import express from 'express';
+import { protect, admin } from '../middlewares/authMiddleware';
 
-const router = Router();
+import { getDashboardStats, createQuiz, createTip, getWinners } from '../controllers/adminController';
 
-/**
- * @route   GET /api/admin/stats
- * @desc    Get dashboard analytics (Requires Token + Admin Role)
- * @access  Private/Admin
- */
-router.get('/stats', protect, adminOnly, getDashboardStats);
+const router = express.Router();
+
+
+router.get('/stats', protect, admin, getDashboardStats);
+router.post('/quizzes', protect, admin, createQuiz);
+router.post('/tips', protect, admin, createTip);
+router.get('/winners', protect, admin, getWinners);
 
 export default router;

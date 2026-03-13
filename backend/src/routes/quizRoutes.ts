@@ -1,15 +1,10 @@
-// src/routes/quizRoutes.ts
-import { Router } from 'express';
-import { submitQuiz } from '../controllers/quizController';
+import express from 'express';
+import { getDailyQuiz, submitQuiz,getDailyTip } from '../controllers/quizController';
 import { protect } from '../middlewares/authMiddleware';
 
-const router = Router();
+const router = express.Router();
 
-/**
- * @route   POST /api/quiz/submit
- * @desc    Submit daily quiz answer and calculate top 3 rewards
- * @access  Private (Requires valid JWT Token)
- */
+router.get('/daily', protect, getDailyQuiz);
 router.post('/submit', protect, submitQuiz);
-
+router.get('/tip', protect, getDailyTip);
 export default router;

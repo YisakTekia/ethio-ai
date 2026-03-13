@@ -12,6 +12,7 @@ import chatRoutes from './routes/chatRoutes';
 import authRoutes from './routes/authRoutes';
 import quizRoutes from './routes/quizRoutes';
 import adminRoutes from './routes/adminRoutes';
+import userRoutes from './routes/userRoutes';
 // Load environment variables
 dotenv.config();
 
@@ -67,19 +68,13 @@ if (process.env.NODE_ENV === 'development') {
 // DATABASE CONNECTION
 // ==========================================
 connectDB();
-// Mount the chat routes under the /api/chat endpoint
 app.use('/api/chat', chatRoutes);
-// ==========================================
-// API ROUTES (Placeholders for future routes)
-// ==========================================
-// Mount authentication routes
 app.use('/api/auth', authRoutes);
-// Health check endpoint for server monitoring
-
 app.use('/api/quiz', quizRoutes);
-
 app.use('/api/admin', adminRoutes);
+app.use('/api/user', userRoutes); 
 
+// Health check endpoint for server monitoring
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'success',
