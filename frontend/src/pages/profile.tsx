@@ -39,7 +39,7 @@ export default function Profile() {
         return;
       }
       try {
-        const response = await fetch('http://localhost:5000/api/auth/api/user/profile', {
+        const response = await fetch('https://ethio-ai-api.onrender.com/api/auth/api/user/profile', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -66,7 +66,7 @@ export default function Profile() {
     }
     setIsSaving(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/api/user/update-name', {
+      const response = await fetch('https://ethio-ai-api.onrender.com/api/auth/api/user/update-name', {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

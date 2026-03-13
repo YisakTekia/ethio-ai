@@ -51,7 +51,7 @@ export default function Health() {
       }
 
       // Send the request to the backend API with 'health' domain
-      const response = await fetch('http://localhost:5000/api/auth/api/chat', { 
+      const response = await fetch('https://ethio-ai-api.onrender.com/api/auth/api/chat', { 
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

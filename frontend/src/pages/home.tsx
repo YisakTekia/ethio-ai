@@ -18,7 +18,7 @@ export default function Home() {
       if (!token) return;
       try {
         // Fetch User Profile (to get the updated name)
-        const userRes = await fetch('http://localhost:5000/api/auth/api/user/profile', {
+        const userRes = await fetch('https://ethio-ai-api.onrender.com/api/auth/api/user/profile', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (userRes.ok) {
@@ -27,7 +27,7 @@ export default function Home() {
         }
 
         // Fetch Daily Tip
-        const tipRes = await fetch('http://localhost:5000/api/auth/api/quiz/tip', {
+        const tipRes = await fetch('https://ethio-ai-api.onrender.com/api/auth/api/quiz/tip', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (tipRes.ok) {
