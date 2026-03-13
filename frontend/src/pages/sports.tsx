@@ -25,7 +25,33 @@ export default function Sports() {
   
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
   
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      try {
+        const token = useAuthStore.getState().token;
+        if (!token) return;
+
+       
+        const response = await fetch('https://ethio-ai-backend.onrender.com/api/chat/history?domain=sports_entertainment', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.history && data.history.length > 0) {
+            setMessages(data.history);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch chat history:", error);
+      }
+    };
+
+    fetchChatHistory();
+  }, []); // ገጹ ሲከፈት 1 ጊዜ ብቻ ይሰራል
   // Auto-scroll to the bottom when a new message arrives
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
