@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Phone, KeyRound, ArrowRight, Loader2, ShieldCheck, Sparkles, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
-const API_URL = 'https://ethio-ai-api.onrender.com/api/auth/api/auth'; 
+const API_URL = 'https://ethio-ai-api.onrender.com/api/auth'; 
 
 export default function Login() {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ export default function Login() {
       }
     } catch (err: any) {
       console.error(err);
-      setError(`ችግር አጋጥሟል: ${err.message === 'Failed to fetch' ? 'ሰርቨሩ አልተገኘም (Ngrok አድራሻ መሆኑን ያረጋግጡ)' : err.message}`);
+      setError(`ችግር አጋጥሟል: ${err.message === 'Failed to fetch' ? 'ከሰርቨር ጋር መገናኘት አልተቻለም (ኢንተርኔትዎን ያረጋግጡ)' : err.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +72,7 @@ export default function Login() {
       }
     } catch (err: any) {
       console.error(err);
-      setError(`ችግር አጋጥሟል: ${err.message === 'Failed to fetch' ? 'ሰርቨሩ አልተገኘም (Ngrok አድራሻ መሆኑን ያረጋግጡ)' : err.message}`);
+      setError(`ችግር አጋጥሟል: ${err.message === 'Failed to fetch' ? 'ከሰርቨር ጋር መገናኘት አልተቻለም (ኢንተርኔትዎን ያረጋግጡ)' : err.message}`);
     } finally {
       setIsLoading(false);
     }
