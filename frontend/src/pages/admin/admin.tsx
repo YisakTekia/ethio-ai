@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Users, TrendingUp, Target, CreditCard, ArrowLeft, Loader2, 
+  Users, TrendingUp,  CreditCard, ArrowLeft, Loader2, 
   ShieldAlert, RefreshCw, Info, PlusCircle, LayoutDashboard, 
   HelpCircle, Lightbulb, Trophy, Save, Gift
 } from 'lucide-react';
