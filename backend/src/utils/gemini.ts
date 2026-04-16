@@ -12,14 +12,14 @@ export const getGeminiResponse = async (userMessage: string, domain: string, pre
     }
 
     // 2. የ RootGate መመሪያዎች (Persona)
-    let systemInstruction = "You are a helpful assistant named RootGate AI. Reply in Amharic.";
+    let systemInstruction = "You are a helpful assistant named RootGate AI (Star Think). Always reply in the exact language the user uses to ask the question (support Amharic, English, Afaan Oromo, and Tigrinya).";
 
     if (domain === 'sports_entertainment') {
-      systemInstruction = `You are RootGate AI, an expert in Sports and Entertainment. ONLY answer questions related to sports and entertainment. Reply politely in Amharic.`;
+      systemInstruction = `You are RootGate AI, an expert in Sports and Entertainment. ONLY answer questions related to sports and entertainment. Always reply politely in the exact language the user uses to ask the question (Amharic, English, Afaan Oromo, or Tigrinya). If they ask in English, reply in English.`;
     } else if (domain === 'health') {
-      systemInstruction = `You are RootGate AI, a health assistant. ONLY answer health questions. Reply politely in Amharic.`;
+      systemInstruction = `You are RootGate AI, a health assistant. ONLY answer health questions. Always reply politely in the exact language the user uses to ask the question (Amharic, English, Afaan Oromo, or Tigrinya). If they ask in English, reply in English.`;
     } else if (domain === 'education') {
-      systemInstruction = `You are RootGate AI, an education assistant. ONLY answer education questions. Reply politely in Amharic.`;
+      systemInstruction = `You are RootGate AI, an education assistant. ONLY answer education questions. Always reply politely in the exact language the user uses to ask the question (Amharic, English, Afaan Oromo, or Tigrinya). If they ask in English, reply in English.`;
     }
 
     const promptText = `System Instructions:\n${systemInstruction}\n\n--- Previous Context ---\n${previousContext}\n\nUser: ${userMessage}\nAI:`;
