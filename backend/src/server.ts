@@ -10,7 +10,7 @@ import mongoSanitize from 'express-mongo-sanitize';
 import { connectDB } from './config/db';
 import chatRoutes from './routes/chatRoutes';
 import authRoutes from './routes/authRoutes';
-import quizRoutes from './routes/quizRoutes';
+//import quizRoutes from './routes/quizRoutes';
 import adminRoutes from './routes/adminRoutes';
 import userRoutes from './routes/userRoutes';
 
@@ -73,7 +73,7 @@ if (process.env.NODE_ENV === 'development') {
 connectDB();
 app.use('/api/chat', chatRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/quiz', quizRoutes);
+//app.use('/api/quiz', quizRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes); 
 

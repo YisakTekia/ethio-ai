@@ -10,7 +10,7 @@ import Health from './pages/health';
 import Education from './pages/education';
 import Login from './pages/login';
 import Subscribe from './pages/subscribe';
-import Quiz from './pages/quiz';
+//import Quiz from './pages/quiz';
 import Admin from './pages/admin/admin';
 
 function App() {
@@ -31,7 +31,7 @@ function App() {
             <Route path="health" element={<Health />} />
             <Route path="education" element={<Education />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="quiz" element={<Quiz />} />
+            {/* <Route path="quiz" element={<Quiz />} /> */}
             <Route path="/admin" element={<Admin />} />
           </Route>
           

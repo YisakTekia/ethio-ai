@@ -8,9 +8,9 @@ export interface IUser extends Document {
   product_id?: string;
   role: string;
   isAdmin: boolean;
-  lastQuizDate: Date | null;
-  lastQuizTimeTaken: number;
-  lastQuizCorrect: boolean;
+  //lastQuizDate: Date | null;
+  //lastQuizTimeTaken: number;
+  //lastQuizCorrect: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,9 +23,9 @@ const userSchema: Schema = new Schema({
   product_id: { type: String }, 
   role: { type: String, default: 'user' },
   isAdmin: { type: Boolean, default: false },
-  lastQuizDate: { type: Date, default: null },
-  lastQuizTimeTaken: { type: Number, default: 0 },
-  lastQuizCorrect: { type: Boolean, default: false }
+  //lastQuizDate: { type: Date, default: null },
+  //lastQuizTimeTaken: { type: Number, default: 0 },
+  //lastQuizCorrect: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export default mongoose.model<IUser>('User', userSchema);
