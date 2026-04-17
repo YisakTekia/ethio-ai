@@ -1,7 +1,8 @@
 // src/pages/Home.tsx
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Trophy, HeartPulse, BookOpen, Sparkles, ChevronRight, Gift } from 'lucide-react';
+// ማሳሰቢያ፡ 'Gift' የሚለውን አይኮን ለ Quiz ብቻ ስለምንጠቀመው እዚህ አጥፍቼዋለሁ (Vercel እንዳይዘጋው)
+import { Trophy, HeartPulse, BookOpen, Sparkles, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 export default function Home() {
@@ -13,24 +14,22 @@ export default function Home() {
   const [dailyTip, setDailyTip] = useState<{ title: string; content: string } | null>(null);
 
   // 1. Fetch Fresh User Profile & Daily Tip from Database
-  
   useEffect(() => {
     const fetchHomeData = async () => {
       if (!token) return;
       try {
         
         const userRes = await fetch('https://ethio-ai-backend.onrender.com/api/user/profile', {
-  headers: { 'Authorization': `Bearer ${token}` }
-});
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (userRes.ok) {
           const userData = await userRes.json();
           setDbUser(userData.data);
         }
 
-        
         const tipRes = await fetch('https://ethio-ai-backend.onrender.com/api/quiz/tip', {
-  headers: { 'Authorization': `Bearer ${token}` }
-});
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (tipRes.ok) {
           const tipData = await tipRes.json();
           if (tipData.data) setDailyTip(tipData.data);
@@ -61,8 +60,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 2. Gamified Daily Quiz Card */}
-      {/*<div className="px-4">
+      {/* 2. Gamified Daily Quiz Card - ኮመንት ተደርጎ ተደብቋል */}
+      {/* <div className="px-4">
         <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-fuchsia-600 rounded-[24px] p-1 shadow-lg shadow-purple-200/50">
           <div className="bg-white rounded-[20px] p-5 relative overflow-hidden">
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-purple-50 rounded-full blur-xl"></div>
@@ -84,9 +83,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div>*/}
+      </div> 
+      */}
 
-      {/* 3. DYNAMIC Daily Tip Card */}
+      {/* 3. DYNAMIC Daily Tip Card - እንደተጠየቀው እንዳለ ነው */}
       {dailyTip && (
         <div className="px-4">
           <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[24px] p-6 text-white shadow-lg shadow-blue-200/50 animate-fade-in-up">
