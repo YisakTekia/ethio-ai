@@ -18,26 +18,30 @@ function App() {
     <Router>
       <Routes>
         
-        {/* Public Route  */}
+        {/* Public Route - Login Page */}
         <Route path="/login" element={<Login />} />
 
-        {/* Protected Routes - Login  */}
-        <Route element={<ProtectedRoute />}>
+        {/* Main PWA layout with Bottom Navigation */}
+        <Route path="/" element={<Layout />}>
           
-          {/* Main PWA layout with Bottom Navigation */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="sports" element={<Sports />} />
-            <Route path="health" element={<Health />} />
-            <Route path="education" element={<Education />} />
+          {/*  PUBLIC ROUTES: Anyone can view these without logging in */}
+          <Route index element={<Home />} />
+          <Route path="sports" element={<Sports />} />
+          <Route path="health" element={<Health />} />
+          <Route path="education" element={<Education />} />
+
+          {/* PROTECTED ROUTES (Inside Layout): Requires the Mock Login */}
+          <Route element={<ProtectedRoute />}>
             <Route path="profile" element={<Profile />} />
             {/* <Route path="quiz" element={<Quiz />} /> */}
-            <Route path="/admin" element={<Admin />} />
+            <Route path="admin" element={<Admin />} />
           </Route>
-          
-          {/* Standalone full-screen protected page */}
+
+        </Route>
+        
+        {/* Standalone full-screen protected page */}
+        <Route element={<ProtectedRoute />}>
           <Route path="/subscribe" element={<Subscribe />} />
-          
         </Route>
 
       </Routes>

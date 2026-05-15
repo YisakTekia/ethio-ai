@@ -29,7 +29,7 @@ export default function Health() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // የድሮ ቻቶችን ከዳታቤዝ ማምጫ (History)
+  //  (History)
   useEffect(() => {
     const fetchChatHistory = async () => {
       try {

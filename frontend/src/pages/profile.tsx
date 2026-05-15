@@ -166,13 +166,13 @@ export default function Profile() {
         </div>
 
         <div className="bg-white rounded-3xl p-2 shadow-sm border border-gray-100">
-          <button onClick={() => showPopup("የዕለቱን ጥያቄዎች (Quiz) በፍጥነት በመመለስ ካሸነፉ፣ የሞባይል ካርድ ሽልማትዎ ያለምንም መዘግየት በቀጥታ ወደ ስልክ ቁጥርዎ ይላካል (Direct Top-up)።")} className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors active:scale-[0.98]">
+          {<button onClick={() => showPopup("የዕለቱን ጥያቄዎች (Quiz) በፍጥነት በመመለስ ካሸነፉ፣ የሞባይል ካርድ ሽልማትዎ ያለምንም መዘግየት በቀጥታ ወደ ስልክ ቁጥርዎ ይላካል (Direct Top-up)።")} className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-2xl transition-colors active:scale-[0.98]">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600"><Zap className="w-5 h-5" /></div>
               <div className="text-left"><h4 className="font-bold text-gray-900">የሽልማት አሰራር</h4><p className="text-[11px] text-gray-500 mt-0.5">ካሸነፉ ሽልማቱ በቀጥታ ይላካል</p></div>
             </div>
             <ChevronRight className="w-5 h-5 text-gray-400" />
-          </button>
+          </button>}
           
           <div className="h-[1px] bg-gray-50 mx-4"></div>
           

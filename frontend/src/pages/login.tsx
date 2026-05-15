@@ -4,8 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Phone, KeyRound, ArrowRight, Loader2, ShieldCheck, Sparkles, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
-const API_URL = 'https://ethio-ai-backend.onrender.com/api/auth'; 
-
 export default function Login() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -16,7 +14,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Step 1: Check Phone
+  // Step 1: Handle Phone Number Input (Mock Verification)
   const handleCheckPhone = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone.trim()) return;
@@ -24,29 +22,15 @@ export default function Login() {
     setIsLoading(true);
     setError('');
 
-    try {
-      const response = await fetch('https://ethio-ai-backend.onrender.com/api/auth/check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setStep(2);
-      } else {
-        setError(data.message || 'ይቅርታ፣ አልተመዘገቡም። (Not registered)');
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError(`ችግር አጋጥሟል: ${err.message === 'Failed to fetch' ? 'ከሰርቨር ጋር መገናኘት አልተቻለም (ኢንተርኔትዎን ያረጋግጡ)' : err.message}`);
-    } finally {
+    // Simulate a network delay to make the portfolio look realistic
+    setTimeout(() => {
       setIsLoading(false);
-    }
+      // Always transition to step 2 for any phone number entered
+      setStep(2);
+    }, 1000); // 1 second delay
   };
 
-  // Step 2: Verify OTP/Password
+  // Step 2: Handle OTP Verification and Auto-Login (Mock Login)
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otp.trim()) return;
@@ -54,28 +38,26 @@ export default function Login() {
     setIsLoading(true);
     setError('');
 
-    try {
-      const response = await fetch(`${API_URL}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password: otp })
-      });
+    // Simulate network delay and login the user automatically
+    setTimeout(() => {
+      // Create a dummy user and token for the portfolio viewer
+      const mockToken = 'portfolio-guest-token-12345';
+      const mockUser = {
+        id: 'guest-user-999',
+        name: 'Portfolio Guest',
+        phone: phone, // Uses whatever phone they typed
+        role: 'user'
+      };
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        setAuth(data.user, data.token);
-        navigate('/'); 
-      } else {
-        setError(data.message || 'የገቡት ኮድ ትክክል አይደለም (Invalid OTP).');
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError(`ችግር አጋጥሟል: ${err.message === 'Failed to fetch' ? 'ከሰርቨር ጋር መገናኘት አልተቻለም (ኢንተርኔትዎን ያረጋግጡ)' : err.message}`);
-    } finally {
+      // Save to local storage and update Zustand global state
+      localStorage.setItem('token', mockToken);
+      setAuth(mockUser, mockToken);
+      
       setIsLoading(false);
-    }
+      
+      // Redirect the user to the Home page after successful dummy login
+      navigate('/'); 
+    }, 1200); // 1.2 seconds delay
   };
 
   return (

@@ -51,7 +51,7 @@ export default function Sports() {
     };
 
     fetchChatHistory();
-  }, []); // ገጹ ሲከፈት 1 ጊዜ ብቻ ይሰራል
+  }, []); 
   // Auto-scroll to the bottom when a new message arrives
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
