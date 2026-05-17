@@ -19,7 +19,7 @@ export default function Home() {
       if (!token) return;
       try {
         
-        const userRes = await fetch('https://ethio-ai-backend.onrender.com/api/user/profile', {
+        const userRes = await fetch('https://star-think.onrender.com/api/user/profile', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (userRes.ok) {
@@ -27,7 +27,7 @@ export default function Home() {
           setDbUser(userData.data);
         }
 
-        const tipRes = await fetch('https://ethio-ai-backend.onrender.com/api/quiz/tip', {
+        const tipRes = await fetch('https://star-think.onrender.com/api/quiz/tip', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (tipRes.ok) {

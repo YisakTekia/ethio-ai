@@ -27,7 +27,7 @@ export default function Quiz() {
   useEffect(() => {
     const fetchDailyQuiz = async () => {
       try {
-        const response = await fetch('https://ethio-ai-backend.onrender.com/api/quiz/daily', {
+        const response = await fetch('https://star-think.onrender.com/api/quiz/daily', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -78,7 +78,7 @@ export default function Quiz() {
     
     setIsSubmitting(true);
     try {
-      const response = await fetch('https://ethio-ai-backend.onrender.com/api/quiz/submit', {
+      const response = await fetch('https://star-think.onrender.com/api/quiz/submit', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

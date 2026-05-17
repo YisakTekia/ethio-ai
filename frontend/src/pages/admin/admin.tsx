@@ -70,7 +70,7 @@ export default function Admin() {
       const token = useAuthStore.getState().token;
       if (!token) throw new Error('AUTH_MISSING');
 
-      const response = await fetch('https://ethio-ai-backend.onrender.com/api/admin/stats', {
+      const response = await fetch('https://star-think.onrender.com/api/admin/stats', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -93,7 +93,7 @@ export default function Admin() {
   const fetchWinners = useCallback(async () => {
     try {
       const token = useAuthStore.getState().token;
-      const res = await fetch('https://ethio-ai-backend.onrender.com/api/admin/winners', {
+      const res = await fetch('https://star-think.onrender.com/api/admin/winners', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -118,7 +118,7 @@ export default function Admin() {
     setIsSubmitting(true);
     try {
       const token = useAuthStore.getState().token;
-      const res = await fetch('https://ethio-ai-backend.onrender.com/api/admin/quizzes', {
+      const res = await fetch('https://star-think.onrender.com/api/admin/quizzes', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -156,7 +156,7 @@ export default function Admin() {
     setIsSubmitting(true);
     try {
       const token = useAuthStore.getState().token;
-      const res = await fetch('https://ethio-ai-backend.onrender.com/api/admin/tips', {
+      const res = await fetch('https://star-think.onrender.com/api/admin/tips', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

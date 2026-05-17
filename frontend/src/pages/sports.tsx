@@ -34,7 +34,7 @@ export default function Sports() {
         if (!token) return;
 
        
-        const response = await fetch('https://ethio-ai-backend.onrender.com/api/chat/history?domain=sports_entertainment', {
+        const response = await fetch('https://star-think.onrender.com/api/chat/history?domain=sports_entertainment', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -77,7 +77,7 @@ export default function Sports() {
       }
 
       // Send the request to the backend API
-      const response = await fetch('https://ethio-ai-backend.onrender.com/api/chat', { 
+      const response = await fetch('https://star-think.onrender.com/api/chat', { 
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

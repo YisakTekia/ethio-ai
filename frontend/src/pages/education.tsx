@@ -36,7 +36,7 @@ export default function Education() {
         const token = useAuthStore.getState().token;
         if (!token) return;
 
-        const response = await fetch('https://ethio-ai-backend.onrender.com/api/chat/history?domain=education', {
+        const response = await fetch('https://star-think.onrender.com/api/chat/history?domain=education', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -69,7 +69,7 @@ export default function Education() {
         throw new Error('AUTH_ERROR');
       }
 
-      const response = await fetch('https://ethio-ai-backend.onrender.com/api/chat', { 
+      const response = await fetch('https://star-think.onrender.com/api/chat', { 
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
